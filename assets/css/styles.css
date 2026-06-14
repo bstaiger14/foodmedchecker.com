@@ -473,6 +473,60 @@ button {
   font-weight: 600;
 }
 
+
+.sources-info {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+.sources-info-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  padding: 0;
+  border: 1px solid #b8cce3;
+  border-radius: 50%;
+  color: var(--blue-dark);
+  background: #f3f8ff;
+  font-size: 0.72rem;
+  line-height: 1;
+  font-weight: 800;
+  box-shadow: none;
+}
+
+.sources-info-tooltip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 10px);
+  z-index: 5;
+  width: min(280px, calc(100vw - 44px));
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  color: var(--text);
+  background: #ffffff;
+  box-shadow: 0 12px 34px rgba(25, 72, 125, 0.18);
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.45;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 6px);
+  transition: opacity 0.16s ease, transform 0.16s ease;
+}
+
+.sources-info:hover .sources-info-tooltip,
+.sources-info:focus-within .sources-info-tooltip {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
 .result-section-card h4,
 .source-card h4,
 .excerpt-card h4 {
