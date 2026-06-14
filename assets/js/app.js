@@ -8,6 +8,9 @@
   const suggestionsList = document.querySelector('#suggestions-list');
   const year = document.querySelector('#year');
   const chips = document.querySelectorAll('.example-chip');
+
+  const cookieBanner = document.querySelector('#cookie-banner');
+  const cookieAcceptButton = document.querySelector('#cookie-accept-button');
   const submitButton = form ? form.querySelector('button[type="submit"]') : null;
   const defaultButtonText = submitButton ? submitButton.textContent : 'Check Food Instructions';
   let suggestionDebounceTimer = null;
@@ -15,6 +18,20 @@
 
   if (year) {
     year.textContent = new Date().getFullYear();
+  }
+
+
+  if (cookieBanner && cookieAcceptButton) {
+    const cookieNoticeKey = 'foodMedCheckerCookieNoticeAccepted';
+
+    if (window.localStorage.getItem(cookieNoticeKey) !== 'true') {
+      cookieBanner.classList.remove('hidden');
+    }
+
+    cookieAcceptButton.addEventListener('click', function () {
+      window.localStorage.setItem(cookieNoticeKey, 'true');
+      cookieBanner.classList.add('hidden');
+    });
   }
 
   function escapeHtml(value) {
