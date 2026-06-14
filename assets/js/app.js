@@ -24,13 +24,28 @@
   if (cookieBanner && cookieAcceptButton) {
     const cookieNoticeKey = 'foodMedCheckerCookieNoticeAccepted';
 
-    if (window.localStorage.getItem(cookieNoticeKey) !== 'true') {
+    let cookieNoticeAccepted = false;
+
+    const cookieNoticeAcceptedByCookie = document.cookie.indexOf(cookieNoticeKey + '=true') !== -1;
+
+    try {
+      cookieNoticeAccepted = window.localStorage.getItem(cookieNoticeKey) === 'true' || cookieNoticeAcceptedByCookie;
+    } catch (error) {
+      cookieNoticeAccepted = cookieNoticeAcceptedByCookie;
+    }
+
+    if (!cookieNoticeAccepted) {
       cookieBanner.classList.remove('hidden');
     }
 
     cookieAcceptButton.addEventListener('click', function () {
-      window.localStorage.setItem(cookieNoticeKey, 'true');
       cookieBanner.classList.add('hidden');
+
+      try {
+        window.localStorage.setItem(cookieNoticeKey, 'true');
+      } catch (error) {
+        document.cookie = cookieNoticeKey + '=true; max-age=31536000; path=/; SameSite=Lax';
+      }
     });
   }
 
