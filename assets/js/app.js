@@ -150,26 +150,41 @@
     }).join('')}</div>`;
   }
 
+  function findMatchingSource(excerpt, sources) {
+    if (!Array.isArray(sources) || sources.length === 0) {
+      return null;
+    }
+
+    return sources.find(function (source) {
+      return source.setId && excerpt.setId && source.setId === excerpt.setId;
+    }) || sources.find(function (source) {
+      return source.title && excerpt.sourceTitle && source.title === excerpt.sourceTitle;
+    }) || sources[0];
+  }
+
   function renderExcerpts(excerpts, sources) {
     if (!Array.isArray(excerpts) || excerpts.length === 0) {
       return '<p>No source excerpts were returned for this scan.</p>';
     }
 
-    const countText = `${excerpts.length} source excerpt${excerpts.length === 1 ? '' : 's'} pulled from FDA labeling for this scan.`;
+    const countText = `${excerpts.length} FDA label excerpt${excerpts.length === 1 ? '' : 's'} matched this scan.`;
 
     return `<p class="excerpt-count">${escapeHtml(countText)}</p><div class="excerpt-list">${excerpts.map(function (excerpt, index) {
-      const title = excerpt.sourceTitle || 'FDA label excerpt';
+      const matchingSource = findMatchingSource(excerpt, sources);
+      const title = excerpt.sourceTitle || (matchingSource ? matchingSource.title : '') || 'FDA label excerpt';
       const section = excerpt.section ? `<span>${escapeHtml(excerpt.section)}</span>` : '';
       const matchedTerms = formatValue(excerpt.matchedTerms);
       const terms = matchedTerms ? `<span>Matched: ${escapeHtml(matchedTerms)}</span>` : '';
       const text = excerpt.text || 'Excerpt text was not available.';
-      const matchingSource = Array.isArray(sources) ? sources.find(function (source) {
-        return source.setId && excerpt.setId && source.setId === excerpt.setId;
-      }) || sources.find(function (source) {
-        return source.title && excerpt.sourceTitle && source.title === excerpt.sourceTitle;
-      }) || sources[0] : null;
+      const brandName = excerpt.brandName || (matchingSource ? matchingSource.brandName : '');
+      const genericName = excerpt.genericName || (matchingSource ? matchingSource.genericName : '');
+      const manufacturer = excerpt.manufacturer || (matchingSource ? matchingSource.manufacturer : '');
+      const effectiveTime = excerpt.effectiveTime || (matchingSource ? matchingSource.effectiveTime : '');
+      const setIdValue = excerpt.setId || (matchingSource ? matchingSource.setId : '');
+      const sourceDetails = [brandName, genericName, manufacturer, effectiveTime ? `Effective: ${effectiveTime}` : ''].filter(Boolean);
+      const setId = setIdValue ? `<p class="source-id">Set ID: ${escapeHtml(setIdValue)}</p>` : '';
       const href = excerpt.dailyMedUrl || excerpt.sourceUrl || excerpt.url || excerpt.labelUrl || excerpt.link || (matchingSource ? matchingSource.dailyMedUrl : '');
-      const link = href ? `<a class="excerpt-link" href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">View excerpt source</a>` : '';
+      const link = href ? `<a class="excerpt-link" href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">View label on DailyMed</a>` : '';
 
       return `
         <article class="excerpt-card">
@@ -177,42 +192,16 @@
             <h4>${escapeHtml(title)}</h4>
             ${link}
           </div>
+          ${sourceDetails.length ? `<p class="excerpt-source-details">${escapeHtml(sourceDetails.join(' • '))}</p>` : ''}
+          ${setId}
           ${section || terms ? `<div class="excerpt-meta">${section}${terms}</div>` : ''}
           <p>${escapeHtml(text)}</p>
-          ${!link ? `<p class="excerpt-source-note">Excerpt ${index + 1} source details are listed in the Sources / Label Links section below when available.</p>` : ''}
+          ${!link ? `<p class="excerpt-source-note">Excerpt ${index + 1} source details are listed above when available.</p>` : ''}
         </article>
       `;
     }).join('')}</div>`;
   }
 
-  function renderSources(sources) {
-    if (!Array.isArray(sources) || sources.length === 0) {
-      return '';
-    }
-
-    return `
-      <section class="result-section-card sources-card">
-        <h3>Sources / Label Links</h3>
-        <div class="source-list">
-          ${sources.map(function (source) {
-            const title = source.title || source.brandName || source.genericName || 'FDA label source';
-            const details = [source.brandName, source.genericName, source.manufacturer, source.effectiveTime ? `Effective: ${source.effectiveTime}` : ''].filter(Boolean);
-            const setId = source.setId ? `<p class="source-id">Set ID: ${escapeHtml(source.setId)}</p>` : '';
-            const link = source.dailyMedUrl ? `<a class="source-link" href="${escapeHtml(source.dailyMedUrl)}" target="_blank" rel="noopener noreferrer">View label on DailyMed</a>` : '';
-
-            return `
-              <article class="source-card">
-                <h4>${escapeHtml(title)}</h4>
-                ${details.length ? `<p>${escapeHtml(details.join(' • '))}</p>` : ''}
-                ${setId}
-                ${link}
-              </article>
-            `;
-          }).join('')}
-        </div>
-      </section>
-    `;
-  }
 
   function renderMetadata(data) {
     const metadata = [];
@@ -265,7 +254,6 @@
           <h3>Source Excerpts</h3>
           ${renderExcerpts(data.sourceExcerpts, data.sources)}
         </section>
-        ${renderSources(data.sources)}
       </div>
       <div class="result-disclaimer">${escapeHtml(data.disclaimer || DEFAULT_DISCLAIMER)}</div>
     `);
