@@ -1,5 +1,5 @@
 (function () {
-  const API_BASE_URL = 'https://foodmedchecker-api.curly-lake-5061.workers.dev';
+  const API_BASE = 'https://foodmedchecker-api.curly-lake-5061.workers.dev';
   const DEFAULT_DISCLAIMER = 'Food Med Checker summarizes FDA labeling for educational purposes only. It is not medical advice and does not replace guidance from a pharmacist, physician, or other qualified healthcare professional.';
 
   const form = document.querySelector('#med-search-form');
@@ -106,7 +106,7 @@
     suggestionAbortController = new AbortController();
 
     try {
-      const response = await fetch(`${API_BASE_URL}/suggest?q=${encodeURIComponent(query)}`, {
+      const response = await fetch(`${API_BASE}/suggest?q=${encodeURIComponent(query)}`, {
         method: 'GET',
         headers: {
           Accept: 'application/json'
@@ -342,7 +342,7 @@
     const fdaDescription = drugSummary.fdaLabelDescription ? `<p class="fda-label-description"><strong>FDA label description:</strong> ${escapeHtml(drugSummary.fdaLabelDescription)}</p>` : '';
     const medlinePlus = drugSummary.medlinePlus || null;
     const medlineTitle = medlinePlus ? (medlinePlus.title || medlinePlus.name || 'MedlinePlus') : '';
-    const medlineSource = medlinePlus ? (medlinePlus.source || medlinePlus.attribution || 'MedlinePlus, National Library of Medicine') : '';
+    const medlineSource = medlinePlus ? (medlinePlus.sourceAttribution || medlinePlus.source || medlinePlus.attribution || 'MedlinePlus, National Library of Medicine') : '';
     const medlineUrl = medlinePlus ? (medlinePlus.url || medlinePlus.link || medlinePlus.href) : '';
     const medlineSummary = medlinePlus ? (medlinePlus.summary || medlinePlus.description || medlinePlus.snippet || '') : '';
     const medlineMarkup = medlinePlus ? `
@@ -368,6 +368,40 @@
       </section>
     `;
   }
+
+  function renderSources(sources) {
+    if (!Array.isArray(sources) || sources.length === 0) {
+      return '';
+    }
+
+    return `
+      <section class="result-section-card sources-card">
+        <h3>Sources / DailyMed Links</h3>
+        <div class="source-list">${sources.map(function (source) {
+          const title = source.title || source.brandName || source.genericName || 'FDA label source';
+          const href = source.dailyMedUrl || source.sourceUrl || source.url || source.labelUrl || source.link || '';
+          const sourceDetails = [
+            source.brandName,
+            source.genericName,
+            source.manufacturer,
+            source.effectiveTime ? `Effective: ${source.effectiveTime}` : ''
+          ].filter(Boolean).join(' • ');
+          const setId = source.setId ? `<p class="source-id">Set ID: ${escapeHtml(source.setId)}</p>` : '';
+          const link = href ? `<a class="source-link" href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">View FDA label on DailyMed</a>` : '';
+
+          return `
+            <article class="source-card">
+              <h4>${escapeHtml(title)}</h4>
+              ${sourceDetails ? `<p>${escapeHtml(sourceDetails)}</p>` : ''}
+              ${setId}
+              ${link}
+            </article>
+          `;
+        }).join('')}</div>
+      </section>
+    `;
+  }
+
 
   function renderMetadata(data) {
     const metadata = [];
@@ -421,6 +455,7 @@
           <h3>Source Excerpts</h3>
           ${renderExcerpts(data.sourceExcerpts, data.sources)}
         </section>
+        ${renderSources(data.sources)}
       </div>
       <div class="result-disclaimer">${escapeHtml(data.disclaimer || DEFAULT_DISCLAIMER)}</div>
     `);
@@ -445,7 +480,7 @@
     const drugName = rawDrugName.trim();
 
     if (!drugName) {
-      renderFriendlyMessage('Enter a medication name', 'Please enter a medication name so Food Med Checker can scan FDA labeling.');
+      renderFriendlyMessage('Enter a medication name', 'Enter a medication name to check food-related FDA label instructions.');
       input.focus();
       return;
     }
@@ -455,7 +490,7 @@
     renderLoading(drugName);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/check?drug=${encodeURIComponent(drugName)}`, {
+      const response = await fetch(`${API_BASE}/check?drug=${encodeURIComponent(drugName)}`, {
         method: 'GET',
         headers: {
           Accept: 'application/json'
