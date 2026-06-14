@@ -93,15 +93,10 @@
 
     suggestionsList.innerHTML = usableSuggestions.map(function (suggestion, index) {
       const name = getSuggestionName(suggestion);
-      const type = suggestion.type || suggestion.category || 'Medication';
-      const source = suggestion.source || suggestion.origin || 'Food Med Checker API';
-      const count = suggestion.count !== undefined && suggestion.count !== null ? `${suggestion.count} match${Number(suggestion.count) === 1 ? '' : 'es'}` : '';
-      const meta = [type, source, count].filter(Boolean).join(' • ');
 
       return `
         <button class="suggestion-item" type="button" role="option" data-suggestion-name="${escapeHtml(name)}" id="suggestion-${index}">
-          <span class="suggestion-name">${escapeHtml(name)}</span>
-          <span class="suggestion-meta">${escapeHtml(meta)}</span>
+          ${escapeHtml(name)}
         </button>
       `;
     }).join('');
@@ -345,43 +340,26 @@
       return '';
     }
 
-    const title = drugSummary.displayName || drugSummary.searchedName || 'Drug summary';
-    const detailRows = [
-      renderDetailList('Brand names', drugSummary.brandNames),
-      renderDetailList('Generic names', drugSummary.genericNames),
-      renderDetailList('Substances', drugSummary.substanceNames),
-      renderDetailList('Manufacturers', drugSummary.manufacturers),
-      renderDetailList('Routes', drugSummary.routes),
-      renderDetailList('Product types', drugSummary.productTypes),
-      renderDetailList('RxCUI', drugSummary.rxcui),
-      renderDetailList('NDC', drugSummary.ndc)
-    ].filter(Boolean).join('');
-    const fdaDescription = drugSummary.fdaLabelDescription ? `<p class="fda-label-description"><strong>FDA label description:</strong> ${escapeHtml(drugSummary.fdaLabelDescription)}</p>` : '';
     const medlinePlus = drugSummary.medlinePlus || null;
-    const medlineTitle = medlinePlus ? (medlinePlus.title || medlinePlus.name || 'MedlinePlus') : '';
-    const medlineSource = medlinePlus ? (medlinePlus.source || medlinePlus.attribution || 'MedlinePlus, National Library of Medicine') : '';
-    const medlineUrl = medlinePlus ? (medlinePlus.url || medlinePlus.link || medlinePlus.href) : '';
-    const medlineSummary = medlinePlus ? (medlinePlus.summary || medlinePlus.description || medlinePlus.snippet || '') : '';
-    const medlineMarkup = medlinePlus ? `
-      <div class="medline-card">
-        <h4>${escapeHtml(medlineTitle)}</h4>
-        <p class="medline-source">${escapeHtml(medlineSource)}</p>
-        ${medlineSummary ? `<p>${escapeHtml(medlineSummary)}</p>` : ''}
-        ${medlineUrl ? `<a class="source-link" href="${escapeHtml(medlineUrl)}" target="_blank" rel="noopener noreferrer">Read more on MedlinePlus</a>` : ''}
-      </div>
-    ` : '';
 
-    if (!detailRows && !fdaDescription && !medlineMarkup) {
+    if (!medlinePlus) {
       return '';
     }
+
+    const medlineTitle = medlinePlus.title || medlinePlus.name || 'MedlinePlus';
+    const medlineSource = medlinePlus.source || medlinePlus.attribution || 'MedlinePlus, National Library of Medicine';
+    const medlineUrl = medlinePlus.url || medlinePlus.link || medlinePlus.href;
+    const medlineSummary = medlinePlus.summary || medlinePlus.description || medlinePlus.snippet || '';
 
     return `
       <section class="result-section-card drug-summary-card">
         <h3>Drug Summary</h3>
-        <h4>${escapeHtml(title)}</h4>
-        ${detailRows ? `<dl class="drug-summary-list">${detailRows}</dl>` : ''}
-        ${fdaDescription}
-        ${medlineMarkup}
+        <div class="medline-card">
+          <h4>${escapeHtml(medlineTitle)}</h4>
+          <p class="medline-source">${escapeHtml(medlineSource)}</p>
+          ${medlineSummary ? `<p>${escapeHtml(medlineSummary)}</p>` : ''}
+          ${medlineUrl ? `<a class="source-link" href="${escapeHtml(medlineUrl)}" target="_blank" rel="noopener noreferrer">Read more on MedlinePlus</a>` : ''}
+        </div>
       </section>
     `;
   }
@@ -432,6 +410,7 @@
         </section>
         <section class="result-section-card">
           <h3>Specific Food/Diet Terms Found</h3>
+          <p class="terms-found-note">These are food- or drink-related terms found in FDA labeling for this medication. They help identify label language that may mention meals, beverages, minerals, absorption, or administration timing.</p>
           ${renderTermChips(data.termsFound)}
         </section>
         <section class="result-section-card excerpt-section">

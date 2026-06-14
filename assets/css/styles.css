@@ -61,15 +61,11 @@ a { color: inherit; text-decoration: none; }
 }
 
 .brand-mark {
-  display: inline-grid;
-  place-items: center;
+  display: block;
   width: 42px;
   height: 42px;
-  border-radius: 14px;
-  color: #ffffff;
-  background: linear-gradient(135deg, var(--blue), #43b2ff);
-  box-shadow: 0 10px 24px rgba(23, 105, 224, 0.28);
-  font-size: 0.8rem;
+  border-radius: 12px;
+  object-fit: contain;
 }
 
 .site-nav {
@@ -828,22 +824,23 @@ button {
   display: grid;
   max-height: 320px;
   overflow-y: auto;
-  padding: 8px;
+  padding: 6px 0;
   border: 1px solid var(--border);
-  border-radius: 18px;
+  border-radius: 12px;
   background: #ffffff;
-  box-shadow: 0 18px 45px rgba(25, 72, 125, 0.18);
+  box-shadow: 0 12px 28px rgba(25, 72, 125, 0.12);
 }
 
 .suggestion-item {
-  display: grid;
+  display: block;
   width: 100%;
-  gap: 4px;
-  padding: 12px 14px;
-  border-radius: 13px;
+  padding: 11px 16px;
+  border-radius: 0;
   color: var(--text);
   background: transparent;
   text-align: left;
+  font: inherit;
+  font-weight: 600;
 }
 
 .suggestion-item:hover,
@@ -851,17 +848,6 @@ button {
   color: var(--blue-dark);
   background: var(--surface-blue);
   outline: none;
-}
-
-.suggestion-name {
-  font-weight: 800;
-  line-height: 1.25;
-}
-
-.suggestion-meta {
-  color: var(--muted);
-  font-size: 0.84rem;
-  font-weight: 700;
 }
 
 .drug-summary-card {
@@ -909,11 +895,15 @@ button {
 }
 
 .medline-card {
-  margin-top: 14px;
   padding: 16px;
   border: 1px solid #cfe0fb;
   border-radius: 16px;
   background: #ffffff;
+}
+
+.terms-found-note {
+  margin-bottom: 18px;
+  color: var(--muted);
 }
 
 .medline-source {
