@@ -1,10 +1,147 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Food Med Checker</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Can I Take My Medication With Food? | Food Med Checker</title>
+  <meta name="description" content="Search FDA drug labeling for food, meal, fasting, high-fat meal, grapefruit, dairy, mineral, alcohol, and tube-feeding medication instructions.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css">
 </head>
 <body>
-    <h1>Food Med Checker</h1>
-    <p>Website coming soon.</p>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="#top" aria-label="Food Med Checker home">
+        <span class="brand-mark">FMC</span>
+        <span>Food Med Checker</span>
+      </a>
+      <nav class="site-nav" aria-label="Primary navigation">
+        <a href="#how-it-works">How It Works</a>
+        <a href="#fda-sources">FDA Sources</a>
+        <a href="#disclaimer">Disclaimer</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero section">
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <p class="eyebrow">Pharmacist-built FDA label checker</p>
+          <h1>Can I Take My Medication With Food?</h1>
+          <p class="hero-subtitle">Search FDA drug labeling for food, meal, fasting, high-fat meal, grapefruit, dairy, mineral, alcohol, and tube-feeding instructions.</p>
+
+          <form class="search-card" id="med-search-form" aria-label="Medication food instruction search">
+            <label for="medication-input">Medication name</label>
+            <div class="search-row">
+              <input id="medication-input" name="medication" type="search" placeholder="Enter a medication, e.g., Xarelto" autocomplete="off" required>
+              <button type="submit">Check Food Instructions</button>
+            </div>
+            <p class="search-note">MVP placeholder: the front end is ready for the future FDA label API connection.</p>
+          </form>
+
+          <div class="example-area" aria-label="Example medication searches">
+            <span>Try:</span>
+            <div class="chip-list">
+              <button class="example-chip" type="button">Xarelto</button>
+              <button class="example-chip" type="button">Levothyroxine</button>
+              <button class="example-chip" type="button">Alendronate</button>
+              <button class="example-chip" type="button">Doxycycline</button>
+              <button class="example-chip" type="button">Metformin</button>
+              <button class="example-chip" type="button">Atorvastatin</button>
+              <button class="example-chip" type="button">Ozempic</button>
+            </div>
+          </div>
+        </div>
+
+        <aside class="hero-panel" aria-label="What Food Med Checker searches for">
+          <div class="panel-icon">Rx</div>
+          <h2>Food-related label language, organized clearly.</h2>
+          <p>Designed to help users review FDA labeling for administration instructions involving meals, fasting, diet terms, and related source excerpts.</p>
+          <ul>
+            <li>Food and meal instructions</li>
+            <li>Fasting and high-fat meal language</li>
+            <li>Grapefruit, dairy, minerals, alcohol, and tube-feeding terms</li>
+          </ul>
+        </aside>
+      </div>
+    </section>
+
+    <section class="results-section" aria-live="polite" aria-atomic="false">
+      <div class="container">
+        <div id="result-card" class="result-card hidden"></div>
+      </div>
+    </section>
+
+    <section class="section" id="how-it-works">
+      <div class="container">
+        <div class="section-heading">
+          <p class="eyebrow">How it works</p>
+          <h2>Simple FDA label review workflow.</h2>
+        </div>
+        <div class="steps-grid">
+          <article class="step-card">
+            <span class="step-number">1</span>
+            <h3>Enter a medication</h3>
+            <p>Type a brand or generic medication name into the search box.</p>
+          </article>
+          <article class="step-card">
+            <span class="step-number">2</span>
+            <h3>Search FDA labeling</h3>
+            <p>When connected, the checker will scan FDA labeling for food and diet-related terms.</p>
+          </article>
+          <article class="step-card">
+            <span class="step-number">3</span>
+            <h3>Review food-related instructions</h3>
+            <p>Read a plain-English educational summary alongside source excerpts and context.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section trust-section" id="fda-sources">
+      <div class="container trust-container">
+        <div class="trust-intro">
+          <p class="eyebrow">Trusted educational design</p>
+          <h2>Created and coded by a pharmacist.</h2>
+          <p>This food and medication instruction checker was created and coded by Dr. Brian Staiger, PharmD, BCPS, owner of HelloPharmacist.com.</p>
+        </div>
+        <div class="trust-grid">
+          <article class="trust-card">
+            <h3>Real-time FDA label scanning</h3>
+            <p>When connected to the API, the checker will search FDA drug labeling for food, meal, fasting, fat, diet, absorption, and administration language.</p>
+          </article>
+          <article class="trust-card">
+            <h3>Plain-English educational summaries</h3>
+            <p>The tool is designed to turn label language into a clear educational summary while preserving the limitations of the underlying FDA labeling.</p>
+          </article>
+          <article class="trust-card">
+            <h3>Source links for transparency</h3>
+            <p>Results are designed to include supporting FDA label excerpts and source context so users can review the underlying labeling language.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section disclaimer-section" id="disclaimer">
+      <div class="container">
+        <div class="disclaimer-card">
+          <h2>Educational disclaimer</h2>
+          <p>Food Med Checker summarizes FDA labeling and is for educational purposes only. It is not medical advice and does not replace guidance from a pharmacist, physician, or other qualified healthcare professional. Medication instructions can vary by dose, formulation, route, and individual patient factors.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p>&copy; <span id="year"></span> Food Med Checker.</p>
+      <p>Static MVP prepared for GitHub Pages.</p>
+    </div>
+  </footer>
+
+  <script src="assets/js/app.js" defer></script>
 </body>
 </html>
