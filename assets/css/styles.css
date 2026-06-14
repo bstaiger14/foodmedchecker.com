@@ -223,18 +223,6 @@ button {
   background: linear-gradient(180deg, #ffffff 0%, var(--surface-blue) 100%);
 }
 
-.panel-icon {
-  display: grid;
-  place-items: center;
-  width: 58px;
-  height: 58px;
-  margin-bottom: 22px;
-  border-radius: 19px;
-  color: var(--blue);
-  background: #ffffff;
-  font-weight: 900;
-  box-shadow: 0 12px 30px rgba(25, 72, 125, 0.12);
-}
 
 .hero-panel p,
 .step-card p,
@@ -1010,6 +998,10 @@ button {
   flex: 0 0 auto;
   color: #ffffff;
   background: var(--blue);
+}
+
+.cookie-banner.hidden {
+  display: none;
 }
 
 .simple-page {
