@@ -712,3 +712,94 @@ button {
     gap: 4px;
   }
 }
+
+/* Requested layout refinements */
+.hero {
+  padding-top: 56px;
+  padding-bottom: 56px;
+}
+
+.hero-grid {
+  align-items: start;
+}
+
+.hero-panel {
+  margin-top: 0;
+}
+
+.search-card {
+  margin-top: 24px;
+}
+
+.example-area {
+  margin-bottom: 0;
+}
+
+#how-it-works {
+  padding-top: 48px;
+}
+
+.faq-item {
+  padding: 0;
+  overflow: hidden;
+}
+
+.faq-item summary {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 22px 26px;
+  cursor: pointer;
+  font-size: 1.15rem;
+  font-weight: 800;
+  line-height: 1.25;
+  list-style: none;
+}
+
+.faq-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq-item summary::after {
+  content: "+";
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  color: var(--blue-dark);
+  background: var(--blue-soft);
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.faq-item[open] summary::after {
+  content: "–";
+}
+
+.faq-item p {
+  margin: -4px 26px 24px;
+}
+
+.excerpt-source-details {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.excerpt-card .source-id {
+  margin: 4px 0 12px;
+}
+
+@media (max-width: 860px) {
+  .hero {
+    padding-top: 44px;
+    padding-bottom: 44px;
+  }
+
+  #how-it-works {
+    padding-top: 40px;
+  }
+}
