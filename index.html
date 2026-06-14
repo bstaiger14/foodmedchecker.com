@@ -20,6 +20,7 @@
       <nav class="site-nav" aria-label="Primary navigation">
         <a href="#how-it-works">How It Works</a>
         <a href="#fda-sources">FDA Sources</a>
+        <a href="#faq">FAQ</a>
         <a href="#disclaimer">Disclaimer</a>
       </nav>
     </div>
@@ -29,8 +30,9 @@
     <section class="hero section">
       <div class="container hero-grid">
         <div class="hero-copy">
-          <p class="eyebrow">Pharmacist-built FDA label checker</p>
+          <p class="eyebrow">Interaction Checker Powered by HelloPharmacist</p>
           <h1>Can I Take My Medication With Food?</h1>
+          <p class="powered-by">Interaction Checker Powered by <a href="https://hellopharmacist.com/" target="_blank" rel="noopener noreferrer">HelloPharmacist</a></p>
           <p class="hero-subtitle">Search FDA drug labeling for food, meal, fasting, high-fat meal, grapefruit, dairy, mineral, alcohol, and tube-feeding instructions.</p>
 
           <form class="search-card" id="med-search-form" aria-label="Medication food instruction search">
@@ -102,24 +104,54 @@
     </section>
 
     <section class="section trust-section" id="fda-sources">
-      <div class="container trust-container">
-        <div class="trust-intro">
-          <p class="eyebrow">Trusted educational design</p>
-          <h2>Created and coded by a pharmacist.</h2>
-          <p>This food and medication instruction checker was created and coded by Dr. Brian Staiger, PharmD, BCPS, owner of HelloPharmacist.com.</p>
+      <div class="container trust-container pharmacist-container">
+        <div class="pharmacist-layout">
+          <img class="pharmacist-headshot" src="https://hellopharmacist.com/wp-content/uploads/2022/11/Brian-Staiger-HelloPharmacist.jpg" alt="Dr. Brian Staiger, PharmD, BCPS" loading="lazy">
+          <div class="trust-intro">
+            <p class="eyebrow pill-eyebrow">How this page works</p>
+            <h2>Created and coded by a pharmacist.</h2>
+            <p>This food and medication interaction page was created and coded by <strong>Dr. Brian Staiger, PharmD, BCPS</strong>, owner of <a href="https://hellopharmacist.com/" target="_blank" rel="noopener noreferrer">HelloPharmacist.com</a>.</p>
+          </div>
         </div>
         <div class="trust-grid">
           <article class="trust-card">
             <h3>Real-time FDA label scanning</h3>
-            <p>The checker searches FDA drug labeling for food, meal, fasting, fat, diet, absorption, and administration language.</p>
+            <p>When you enter a medication, the checker searches <a href="https://open.fda.gov/apis/drug/label/" target="_blank" rel="noopener noreferrer">openFDA drug labeling</a> in real time for FDA-approved prescription and OTC label records. It reviews label sections for food, fat, diet, absorption, administration, and interaction language that could matter when taking a medication with food.</p>
           </article>
           <article class="trust-card">
-            <h3>Plain-English educational summaries</h3>
-            <p>The tool is designed to turn label language into a clear educational summary while preserving the limitations of the underlying FDA labeling.</p>
+            <h3>Pharmacist-built, educational summaries</h3>
+            <p>The page turns matching FDA label excerpts into a plain-English summary, while preserving key limitations: this is a label-language scan, not a diagnosis, not a complete interaction checker, and not a replacement for your pharmacist or prescriber.</p>
           </article>
           <article class="trust-card">
             <h3>Source links for transparency</h3>
-            <p>Results are designed to include supporting FDA label excerpts and source context so users can review the underlying labeling language.</p>
+            <p>For additional primary drug-label context, you can also search the same medication in <a href="https://dailymed.nlm.nih.gov/dailymed/" target="_blank" rel="noopener noreferrer">DailyMed</a>, the National Library of Medicine resource that publishes FDA label information. Always confirm personal medication decisions with a qualified healthcare professional.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section faq-section" id="faq">
+      <div class="container">
+        <div class="section-heading">
+          <p class="eyebrow">FAQ</p>
+          <h2>Questions about how Food Med Checker works.</h2>
+        </div>
+        <div class="faq-list">
+          <article class="faq-item">
+            <h3>How does this work?</h3>
+            <p>Enter a medication name and click “Check Food Instructions.” Food Med Checker searches FDA-approved drug labeling in real time, looks for food-related administration and interaction language, and then shows a plain-English summary with the exact source excerpts used to support the result.</p>
+          </article>
+          <article class="faq-item">
+            <h3>Is the information accurate and trustworthy?</h3>
+            <p>The checker reviews FDA-approved labeling for drugs in real time when you click “Check Food Instructions.” No information is made up, written as an unsupported opinion, or pulled from an unverified database. The source material comes from FDA labeling records—the same label information you can review through resources such as DailyMed.</p>
+          </article>
+          <article class="faq-item">
+            <h3>Does this replace a pharmacist or prescriber?</h3>
+            <p>No. Food Med Checker is an educational label-search tool. It can help you find FDA label language about food, meals, fasting, absorption, and related instructions, but your pharmacist or prescriber should confirm what applies to your dose, formulation, medical history, and full medication list.</p>
+          </article>
+          <article class="faq-item">
+            <h3>Why do some searches show limited results?</h3>
+            <p>Some labels do not contain clear food-related wording, and instructions can vary by brand, generic manufacturer, formulation, and route. If a result looks incomplete, try a brand name and a generic name, then review the linked label source or ask a healthcare professional.</p>
           </article>
         </div>
       </div>

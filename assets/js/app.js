@@ -150,23 +150,36 @@
     }).join('')}</div>`;
   }
 
-  function renderExcerpts(excerpts) {
+  function renderExcerpts(excerpts, sources) {
     if (!Array.isArray(excerpts) || excerpts.length === 0) {
       return '<p>No source excerpts were returned for this scan.</p>';
     }
 
-    return `<div class="excerpt-list">${excerpts.map(function (excerpt) {
+    const countText = `${excerpts.length} source excerpt${excerpts.length === 1 ? '' : 's'} pulled from FDA labeling for this scan.`;
+
+    return `<p class="excerpt-count">${escapeHtml(countText)}</p><div class="excerpt-list">${excerpts.map(function (excerpt, index) {
       const title = excerpt.sourceTitle || 'FDA label excerpt';
       const section = excerpt.section ? `<span>${escapeHtml(excerpt.section)}</span>` : '';
       const matchedTerms = formatValue(excerpt.matchedTerms);
       const terms = matchedTerms ? `<span>Matched: ${escapeHtml(matchedTerms)}</span>` : '';
       const text = excerpt.text || 'Excerpt text was not available.';
+      const matchingSource = Array.isArray(sources) ? sources.find(function (source) {
+        return source.setId && excerpt.setId && source.setId === excerpt.setId;
+      }) || sources.find(function (source) {
+        return source.title && excerpt.sourceTitle && source.title === excerpt.sourceTitle;
+      }) || sources[0] : null;
+      const href = excerpt.dailyMedUrl || excerpt.sourceUrl || excerpt.url || excerpt.labelUrl || excerpt.link || (matchingSource ? matchingSource.dailyMedUrl : '');
+      const link = href ? `<a class="excerpt-link" href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">View excerpt source</a>` : '';
 
       return `
         <article class="excerpt-card">
-          <h4>${escapeHtml(title)}</h4>
+          <div class="excerpt-card-heading">
+            <h4>${escapeHtml(title)}</h4>
+            ${link}
+          </div>
           ${section || terms ? `<div class="excerpt-meta">${section}${terms}</div>` : ''}
           <p>${escapeHtml(text)}</p>
+          ${!link ? `<p class="excerpt-source-note">Excerpt ${index + 1} source details are listed in the Sources / Label Links section below when available.</p>` : ''}
         </article>
       `;
     }).join('')}</div>`;
@@ -250,7 +263,7 @@
         </section>
         <section class="result-section-card excerpt-section">
           <h3>Source Excerpts</h3>
-          ${renderExcerpts(data.sourceExcerpts)}
+          ${renderExcerpts(data.sourceExcerpts, data.sources)}
         </section>
         ${renderSources(data.sources)}
       </div>
