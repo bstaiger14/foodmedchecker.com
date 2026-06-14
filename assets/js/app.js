@@ -5,10 +5,13 @@
   const form = document.querySelector('#med-search-form');
   const input = document.querySelector('#medication-input');
   const resultCard = document.querySelector('#result-card');
+  const suggestionsList = document.querySelector('#suggestions-list');
   const year = document.querySelector('#year');
   const chips = document.querySelectorAll('.example-chip');
   const submitButton = form ? form.querySelector('button[type="submit"]') : null;
   const defaultButtonText = submitButton ? submitButton.textContent : 'Check Food Instructions';
+  let suggestionDebounceTimer = null;
+  let suggestionAbortController = null;
 
   if (year) {
     year.textContent = new Date().getFullYear();
@@ -24,6 +27,112 @@
         '"': '&quot;'
       }[character];
     });
+  }
+
+
+  function normalizeSuggestionList(payload) {
+    if (Array.isArray(payload)) {
+      return payload;
+    }
+
+    if (Array.isArray(payload && payload.suggestions)) {
+      return payload.suggestions;
+    }
+
+    if (Array.isArray(payload && payload.results)) {
+      return payload.results;
+    }
+
+    return [];
+  }
+
+  function getSuggestionName(suggestion) {
+    return suggestion.name || suggestion.displayName || suggestion.drug || suggestion.term || suggestion.value || '';
+  }
+
+  function hideSuggestions() {
+    if (!suggestionsList || !input) {
+      return;
+    }
+
+    suggestionsList.classList.add('hidden');
+    suggestionsList.innerHTML = '';
+    input.setAttribute('aria-expanded', 'false');
+  }
+
+  function renderSuggestions(suggestions) {
+    if (!suggestionsList || !input) {
+      return;
+    }
+
+    const usableSuggestions = suggestions.filter(function (suggestion) {
+      return getSuggestionName(suggestion);
+    }).slice(0, 8);
+
+    if (!usableSuggestions.length) {
+      hideSuggestions();
+      return;
+    }
+
+    suggestionsList.innerHTML = usableSuggestions.map(function (suggestion, index) {
+      const name = getSuggestionName(suggestion);
+      const type = suggestion.type || suggestion.category || 'Medication';
+      const source = suggestion.source || suggestion.origin || 'Food Med Checker API';
+      const count = suggestion.count !== undefined && suggestion.count !== null ? `${suggestion.count} match${Number(suggestion.count) === 1 ? '' : 'es'}` : '';
+      const meta = [type, source, count].filter(Boolean).join(' • ');
+
+      return `
+        <button class="suggestion-item" type="button" role="option" data-suggestion-name="${escapeHtml(name)}" id="suggestion-${index}">
+          <span class="suggestion-name">${escapeHtml(name)}</span>
+          <span class="suggestion-meta">${escapeHtml(meta)}</span>
+        </button>
+      `;
+    }).join('');
+
+    suggestionsList.classList.remove('hidden');
+    input.setAttribute('aria-expanded', 'true');
+  }
+
+  async function fetchSuggestions(query) {
+    if (!query || query.length < 2) {
+      hideSuggestions();
+      return;
+    }
+
+    if (suggestionAbortController) {
+      suggestionAbortController.abort();
+    }
+
+    suggestionAbortController = new AbortController();
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/suggest?q=${encodeURIComponent(query)}`, {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json'
+        },
+        signal: suggestionAbortController.signal
+      });
+
+      if (!response.ok) {
+        hideSuggestions();
+        return;
+      }
+
+      const contentType = response.headers.get('content-type') || '';
+      const payload = contentType.includes('application/json') ? await response.json() : [];
+
+      if (input.value.trim() !== query) {
+        return;
+      }
+
+      renderSuggestions(normalizeSuggestionList(payload));
+    } catch (error) {
+      if (error.name !== 'AbortError') {
+        hideSuggestions();
+        console.log('Food Med Checker suggestion error:', error.message);
+      }
+    }
   }
 
   function formatValue(value) {
@@ -203,6 +312,63 @@
   }
 
 
+
+  function renderDetailList(label, values) {
+    const formatted = formatValue(values);
+
+    if (!formatted) {
+      return '';
+    }
+
+    return `<div class="drug-summary-detail"><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(formatted)}</dd></div>`;
+  }
+
+  function renderDrugSummary(drugSummary) {
+    if (!drugSummary || typeof drugSummary !== 'object') {
+      return '';
+    }
+
+    const title = drugSummary.displayName || drugSummary.searchedName || 'Drug summary';
+    const detailRows = [
+      renderDetailList('Brand names', drugSummary.brandNames),
+      renderDetailList('Generic names', drugSummary.genericNames),
+      renderDetailList('Substances', drugSummary.substanceNames),
+      renderDetailList('Manufacturers', drugSummary.manufacturers),
+      renderDetailList('Routes', drugSummary.routes),
+      renderDetailList('Product types', drugSummary.productTypes),
+      renderDetailList('RxCUI', drugSummary.rxcui),
+      renderDetailList('NDC', drugSummary.ndc)
+    ].filter(Boolean).join('');
+    const fdaDescription = drugSummary.fdaLabelDescription ? `<p class="fda-label-description"><strong>FDA label description:</strong> ${escapeHtml(drugSummary.fdaLabelDescription)}</p>` : '';
+    const medlinePlus = drugSummary.medlinePlus || null;
+    const medlineTitle = medlinePlus ? (medlinePlus.title || medlinePlus.name || 'MedlinePlus') : '';
+    const medlineSource = medlinePlus ? (medlinePlus.source || medlinePlus.attribution || 'MedlinePlus, National Library of Medicine') : '';
+    const medlineUrl = medlinePlus ? (medlinePlus.url || medlinePlus.link || medlinePlus.href) : '';
+    const medlineSummary = medlinePlus ? (medlinePlus.summary || medlinePlus.description || medlinePlus.snippet || '') : '';
+    const medlineMarkup = medlinePlus ? `
+      <div class="medline-card">
+        <h4>${escapeHtml(medlineTitle)}</h4>
+        <p class="medline-source">${escapeHtml(medlineSource)}</p>
+        ${medlineSummary ? `<p>${escapeHtml(medlineSummary)}</p>` : ''}
+        ${medlineUrl ? `<a class="source-link" href="${escapeHtml(medlineUrl)}" target="_blank" rel="noopener noreferrer">Read more on MedlinePlus</a>` : ''}
+      </div>
+    ` : '';
+
+    if (!detailRows && !fdaDescription && !medlineMarkup) {
+      return '';
+    }
+
+    return `
+      <section class="result-section-card drug-summary-card">
+        <h3>Drug Summary</h3>
+        <h4>${escapeHtml(title)}</h4>
+        ${detailRows ? `<dl class="drug-summary-list">${detailRows}</dl>` : ''}
+        ${fdaDescription}
+        ${medlineMarkup}
+      </section>
+    `;
+  }
+
   function renderMetadata(data) {
     const metadata = [];
 
@@ -242,6 +408,7 @@
           <h3>Practical Takeaway</h3>
           <p>${escapeHtml(getPracticalTakeaway(data))}</p>
         </section>
+        ${renderDrugSummary(data.drugSummary)}
         <section class="result-section-card">
           <h3>FDA Label Food Findings</h3>
           ${renderList(data.labelFindings, getFindingFallback(data.status))}
@@ -283,6 +450,7 @@
       return;
     }
 
+    hideSuggestions();
     setLoadingState(true);
     renderLoading(drugName);
 
@@ -314,6 +482,47 @@
       event.preventDefault();
       runSearch(input.value);
     });
+
+    input.addEventListener('input', function () {
+      const query = input.value.trim();
+      window.clearTimeout(suggestionDebounceTimer);
+
+      if (query.length < 2) {
+        hideSuggestions();
+        return;
+      }
+
+      suggestionDebounceTimer = window.setTimeout(function () {
+        fetchSuggestions(query);
+      }, 250);
+    });
+
+    input.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape') {
+        hideSuggestions();
+      }
+    });
+
+    document.addEventListener('click', function (event) {
+      if (!form.contains(event.target)) {
+        hideSuggestions();
+      }
+    });
+
+    if (suggestionsList) {
+      suggestionsList.addEventListener('click', function (event) {
+        const suggestionButton = event.target.closest('.suggestion-item');
+
+        if (!suggestionButton) {
+          return;
+        }
+
+        const selectedName = suggestionButton.getAttribute('data-suggestion-name');
+        input.value = selectedName;
+        hideSuggestions();
+        runSearch(selectedName);
+      });
+    }
   }
 
   chips.forEach(function (chip) {

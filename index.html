@@ -38,8 +38,11 @@
 
           <form class="search-card" id="med-search-form" aria-label="Medication food instruction search">
             <label for="medication-input">Medication name</label>
-            <div class="search-row">
-              <input id="medication-input" name="medication" type="search" placeholder="Enter a medication, e.g., Xarelto" autocomplete="off" required>
+            <div class="search-row autocomplete-root">
+              <div class="autocomplete-field">
+                <input id="medication-input" name="medication" type="search" placeholder="Enter a medication, e.g., Xarelto" autocomplete="off" aria-autocomplete="list" aria-expanded="false" aria-controls="suggestions-list" required>
+                <div id="suggestions-list" class="suggestions-dropdown hidden" role="listbox" aria-label="Medication suggestions"></div>
+              </div>
               <button type="submit">Check Food Instructions</button>
             </div>
             <p class="search-note">Searches live FDA labeling through the Food Med Checker API. Results are educational and source-grounded.</p>
