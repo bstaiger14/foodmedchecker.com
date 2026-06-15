@@ -1715,3 +1715,225 @@ input {
     gap: 10px;
   }
 }
+
+/* Updated Worker API result layout */
+.result-heading {
+  margin-bottom: 18px;
+}
+
+.result-heading h2 {
+  margin-bottom: 16px;
+}
+
+.result-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.result-summary-grid > div {
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: #f8fbff;
+}
+
+.result-summary-grid span {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.result-summary-grid strong {
+  display: block;
+  color: var(--text);
+  font-size: 1rem;
+  line-height: 1.35;
+}
+
+.result-badge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  max-width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #c7e3ff;
+  border-radius: 999px;
+  color: var(--blue-dark);
+  background: var(--surface-blue);
+  font-size: 0.9rem;
+  font-weight: 900;
+  line-height: 1.2;
+  text-transform: none;
+}
+
+.food-badge {
+  border-color: #b8dfca;
+  color: #17613d;
+  background: #e9f8f0;
+}
+
+.status-badge {
+  border-color: #d8e6fa;
+  color: var(--blue-dark);
+  background: #f3f8ff;
+}
+
+.badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.quick-answer {
+  color: var(--text) !important;
+  font-size: 1.12rem;
+  font-weight: 750;
+}
+
+.practical-card {
+  border-color: #bfd9ff;
+  background: linear-gradient(180deg, #ffffff 0%, #eef7ff 100%);
+}
+
+.practical-card p {
+  color: var(--text) !important;
+  font-weight: 700;
+}
+
+.mct-card {
+  grid-column: 1 / -1;
+  background: #fbfdff;
+}
+
+.warning-card {
+  grid-column: 1 / -1;
+  border-color: #f1c27d;
+  background: #fff9ed;
+}
+
+.warning-card h3 {
+  color: #7a4700;
+}
+
+.warning-list,
+.finding-card-list {
+  display: grid;
+  gap: 12px;
+}
+
+.warning-item,
+.finding-card,
+.medline-card {
+  padding: 15px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+.warning-item {
+  border-color: #f0d2a2;
+}
+
+.warning-item h4,
+.finding-card h4 {
+  margin: 0 0 8px;
+}
+
+.warning-item p,
+.finding-card p {
+  margin-bottom: 0;
+}
+
+.findings-section {
+  grid-column: 1 / -1;
+}
+
+.finding-severity,
+.finding-meta,
+.supplemental-note,
+.medline-source {
+  color: var(--muted);
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.result-chip-group {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.result-chip-group > span {
+  color: var(--muted);
+  font-size: 0.88rem;
+  font-weight: 900;
+}
+
+.excerpt-card summary {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  font-weight: 900;
+  list-style: none;
+}
+
+.excerpt-card summary::-webkit-details-marker {
+  display: none;
+}
+
+.excerpt-card summary::before {
+  content: "+";
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  color: var(--blue-dark);
+  background: var(--blue-soft);
+  font-weight: 900;
+}
+
+.excerpt-card[open] summary::before {
+  content: "–";
+}
+
+.excerpt-card summary span {
+  flex: 1;
+  min-width: 0;
+}
+
+.excerpt-body {
+  margin-top: 14px;
+}
+
+.excerpt-highlight {
+  padding: 0 2px;
+  border-radius: 4px;
+  background: #fff1a8;
+}
+
+@media (max-width: 860px) {
+  .result-summary-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 620px) {
+  .result-badge {
+    border-radius: 14px;
+  }
+
+  .excerpt-card summary {
+    flex-direction: column;
+  }
+}
