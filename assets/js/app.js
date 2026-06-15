@@ -13,6 +13,21 @@
   const cookieAcceptButton = document.querySelector('#cookie-accept-button');
   const submitButton = form ? form.querySelector('button[type="submit"]') : null;
   const defaultButtonText = submitButton ? submitButton.textContent : 'Check Food Instructions';
+  const loadingFacts = [
+    'This may take a minute while we scan available FDA labels.',
+    'Fun drug fact: Viagra started as a chest-pain drug. The side effect stole the show.',
+    'Fun drug fact: Premarin’s name comes from PREgnant MARe urINe. Seriously.',
+    'Fun drug fact: Lasix got its name because it “lasts six” hours.',
+    'Fun drug fact: Warfarin’s story starts with moldy sweet clover and bleeding cattle.',
+    'Fun drug fact: Warfarin is partly named after WARF: Wisconsin Alumni Research Foundation.',
+    'Fun drug fact: Rogaine began as a blood-pressure drug. Hair growth was the surprise.',
+    'Fun drug fact: Nystatin was named after New York State.',
+    'Fun drug fact: Tylenol hides chemistry in its name: aceTYL + phenOL.',
+    'Fun drug fact: Penicillin comes from Penicillium mold, named for its paintbrush shape.',
+    'Fun drug fact: Insulin gets its name from “insula,” Latin for island.'
+  ];
+  let loadingFactTimer = null;
+  let loadingFactIndex = 0;
   let suggestionDebounceTimer = null;
   let suggestionAbortController = null;
 
@@ -208,6 +223,37 @@
     }
   }
 
+  function updateLoadingFact() {
+    const factElement = document.querySelector('#loading-fact-text');
+
+    if (!factElement) {
+      return;
+    }
+
+    factElement.classList.remove('is-visible');
+
+    window.setTimeout(function () {
+      const currentFact = loadingFacts[loadingFactIndex % loadingFacts.length];
+      factElement.textContent = currentFact;
+      factElement.classList.add('is-visible');
+      loadingFactIndex += 1;
+    }, 220);
+  }
+
+  function startLoadingFacts() {
+    stopLoadingFacts();
+    loadingFactIndex = 0;
+    updateLoadingFact();
+    loadingFactTimer = window.setInterval(updateLoadingFact, 5000);
+  }
+
+  function stopLoadingFacts() {
+    if (loadingFactTimer) {
+      window.clearInterval(loadingFactTimer);
+      loadingFactTimer = null;
+    }
+  }
+
   function renderFriendlyMessage(title, message) {
     showResult(`
       <span class="result-topline">Search needed</span>
@@ -222,12 +268,17 @@
       <h2>Checking food instructions for: ${escapeHtml(drugName)}</h2>
       <div class="loading-card">
         <span class="loading-spinner" aria-hidden="true"></span>
-        <div>
+        <div class="loading-copy">
           <strong>Searching FDA labeling...</strong>
           <p>Reviewing available label language for food, meal, fasting, diet, and administration terms.</p>
+          <div class="loading-fact-box" aria-live="polite" aria-atomic="true">
+            <span class="loading-fact-kicker">While you wait</span>
+            <p class="loading-fact-text" id="loading-fact-text"></p>
+          </div>
         </div>
       </div>
     `, false);
+    startLoadingFacts();
   }
 
   function getFindingFallback(status) {
@@ -603,6 +654,7 @@
     } catch (error) {
       renderError(error.message);
     } finally {
+      stopLoadingFacts();
       setLoadingState(false);
     }
   }
