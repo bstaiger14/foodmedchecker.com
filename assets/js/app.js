@@ -298,6 +298,42 @@
     }) || sources[0];
   }
 
+
+  function normalizeMatchedTerms(terms) {
+    if (!terms) {
+      return [];
+    }
+
+    if (Array.isArray(terms)) {
+      return terms.map(formatValue).filter(Boolean);
+    }
+
+    return String(terms).split(',').map(function (term) {
+      return term.trim();
+    }).filter(Boolean);
+  }
+
+  function escapeRegExp(value) {
+    return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  function renderHighlightedExcerptText(text, matchedTerms) {
+    const escapedText = escapeHtml(text || 'Excerpt text was not available.');
+    const highlightTerms = normalizeMatchedTerms(matchedTerms).filter(function (term) {
+      return term.length > 2;
+    }).sort(function (a, b) {
+      return b.length - a.length;
+    });
+
+    if (!highlightTerms.length) {
+      return escapedText;
+    }
+
+    const pattern = new RegExp('(' + highlightTerms.map(escapeRegExp).join('|') + ')', 'gi');
+
+    return escapedText.replace(pattern, '<mark class="excerpt-highlight">$1</mark>');
+  }
+
   function renderExcerpts(excerpts, sources) {
     if (!Array.isArray(excerpts) || excerpts.length === 0) {
       return '<p>No source excerpts were returned for this scan.</p>';
@@ -312,6 +348,7 @@
       const matchedTerms = formatValue(excerpt.matchedTerms);
       const terms = matchedTerms ? `<span>Matched: ${escapeHtml(matchedTerms)}</span>` : '';
       const text = excerpt.text || 'Excerpt text was not available.';
+      const highlightedText = renderHighlightedExcerptText(text, excerpt.matchedTerms);
       const brandName = excerpt.brandName || (matchingSource ? matchingSource.brandName : '');
       const genericName = excerpt.genericName || (matchingSource ? matchingSource.genericName : '');
       const manufacturer = excerpt.manufacturer || (matchingSource ? matchingSource.manufacturer : '');
@@ -331,7 +368,7 @@
           ${sourceDetails.length ? `<p class="excerpt-source-details">${escapeHtml(sourceDetails.join(' • '))}</p>` : ''}
           ${setId}
           ${section || terms ? `<div class="excerpt-meta">${section}${terms}</div>` : ''}
-          <p>${escapeHtml(text)}</p>
+          <p>${highlightedText}</p>
           ${!link ? `<p class="excerpt-source-note">Excerpt ${index + 1} source details are listed above when available.</p>` : ''}
         </article>
       `;

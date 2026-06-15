@@ -1297,3 +1297,49 @@ button {
     border-radius: 16px;
   }
 }
+
+
+/* Above-the-fold hero tuning */
+h1 {
+  max-width: 700px;
+  margin-bottom: 16px;
+  font-size: clamp(2.35rem, 4.9vw, 4.25rem);
+  line-height: 1.02;
+}
+
+.hero {
+  padding-top: 40px;
+  padding-bottom: 42px;
+}
+
+.hero-subtitle {
+  margin-bottom: 18px;
+}
+
+.hero-highlights {
+  margin-bottom: 18px;
+}
+
+.search-card {
+  margin-top: 18px;
+}
+
+.excerpt-highlight {
+  padding: 0 0.16em;
+  border-radius: 0.28em;
+  color: #0d3476;
+  background: #fff1a8;
+  box-shadow: 0 0 0 1px rgba(226, 176, 34, 0.28);
+  font-weight: 700;
+}
+
+@media (max-width: 860px) {
+  h1 {
+    font-size: clamp(2.2rem, 9vw, 3.6rem);
+  }
+
+  .hero {
+    padding-top: 32px;
+    padding-bottom: 36px;
+  }
+}
