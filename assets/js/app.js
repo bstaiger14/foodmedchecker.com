@@ -41,6 +41,7 @@
   ];
   let loadingFactTimer = null;
   let loadingFactIndex = 0;
+  let randomizedLoadingFacts = loadingFacts.slice();
   let suggestionDebounceTimer = null;
   let suggestionAbortController = null;
 
@@ -261,6 +262,17 @@
     return '';
   }
 
+  function shuffleLoadingFacts() {
+    randomizedLoadingFacts = loadingFacts.slice();
+
+    for (let index = randomizedLoadingFacts.length - 1; index > 0; index -= 1) {
+      const randomIndex = Math.floor(Math.random() * (index + 1));
+      const currentFact = randomizedLoadingFacts[index];
+      randomizedLoadingFacts[index] = randomizedLoadingFacts[randomIndex];
+      randomizedLoadingFacts[randomIndex] = currentFact;
+    }
+  }
+
   function updateLoadingFact() {
     const factElement = document.querySelector('#loading-fact-text');
 
@@ -271,7 +283,12 @@
     factElement.classList.remove('is-visible');
 
     window.setTimeout(function () {
-      const currentFact = loadingFacts[loadingFactIndex % loadingFacts.length];
+      if (loadingFactIndex >= randomizedLoadingFacts.length) {
+        shuffleLoadingFacts();
+        loadingFactIndex = 0;
+      }
+
+      const currentFact = randomizedLoadingFacts[loadingFactIndex];
       factElement.textContent = currentFact;
       factElement.classList.add('is-visible');
       loadingFactIndex += 1;
@@ -280,7 +297,8 @@
 
   function startLoadingFacts() {
     stopLoadingFacts();
-    loadingFactIndex = Math.floor(Math.random() * loadingFacts.length);
+    shuffleLoadingFacts();
+    loadingFactIndex = 0;
     updateLoadingFact();
     loadingFactTimer = window.setInterval(updateLoadingFact, 5000);
   }
