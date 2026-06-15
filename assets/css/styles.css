@@ -78,14 +78,6 @@ a { color: inherit; text-decoration: none; }
   letter-spacing: 0;
 }
 
-.brand-mark {
-  display: block;
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
-  object-fit: contain;
-}
-
 .site-nav {
   display: flex;
   gap: 22px;
@@ -665,20 +657,7 @@ button {
 }
 
 .pharmacist-layout {
-  display: grid;
-  grid-template-columns: 150px minmax(0, 1fr);
-  gap: 28px;
-  align-items: center;
   margin-bottom: 36px;
-}
-
-.pharmacist-headshot {
-  width: 128px;
-  height: 128px;
-  border: 6px solid #ffffff;
-  border-radius: 50%;
-  object-fit: cover;
-  box-shadow: 0 20px 45px rgba(25, 72, 125, 0.18);
 }
 
 .pill-eyebrow {
