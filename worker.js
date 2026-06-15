@@ -24,24 +24,28 @@ const LABEL_SECTIONS = [
   'stop_use', 'stop_use_table', 'food_safety_warning', 'use_in_specific_populations'
 ];
 
+const FLEXIBLE_TERM_SEPARATOR = '[\\s\\-–—/]+';
+const MINERAL_SUPPORT_RX = /\b(diet(?:ary)?|food|meal|intake|supplement(?:s|al)?|vitamin|mineral|multivitamin|antacid(?:s)?|milk|dairy|yogurt|cheese|carbonate|citrate|acetate|sulfate|sulphate|gluconate|oxide|hydroxide|salt(?:s)?|bind(?:s|ing)?|chelat(?:e|es|ion|ing)|absorption|bioavailability|separat(?:e|ed|ion)|administ(?:er|ered|ration).*\b(apart|with|from)|apart|reduc(?:e|ed|es|ing)\s+(?:efficacy|effectiveness|absorption)|decreas(?:e|ed|es|ing)\s+absorption)\b/i;
+const MINERAL_EXCLUSION_RX = /\b(?:calcium[\s\-–—/]+(?:channel(?:s)?|influx|antagonist(?:s)?|channel[\s\-–—/]+blocker(?:s)?|channel[\s\-–—/]+blocking[\s\-–—/]+drug(?:s)?)|iron[\s\-–—/]+(?:deficiency|overload)|magnesium[\s\-–—/]+(?:level(?:s)?|concentration(?:s)?)|alumin(?:um|ium)[\s\-–—/]+(?:adjuvant(?:s)?|container(?:s)?))\b/i;
+
 const TERMS = [
-  { term: 'grapefruit juice', rx: /grapefruit\s*(?:juice)?/i, priority: 100, warning: 'avoid grapefruit juice' },
-  { term: 'alcohol', rx: /\balcohol(?:ic)?\b|ethanol/i, priority: 95, warning: 'avoid or ask about alcohol' },
-  { term: 'dairy', rx: /\bdairy\b|\bmilk\b|\byogurt\b/i, priority: 90, warning: 'separate from dairy when directed' },
-  { term: 'calcium', rx: /\bcalcium\b/i, priority: 90, warning: 'separate from calcium/mineral products when directed' },
-  { term: 'iron', rx: /\biron\b|\bferrous\b/i, priority: 90, warning: 'separate from iron/mineral products when directed' },
-  { term: 'magnesium', rx: /\bmagnesium\b/i, priority: 90, warning: 'separate from magnesium/mineral products when directed' },
-  { term: 'aluminum', rx: /\baluminum\b/i, priority: 90, warning: 'separate from aluminum/mineral products when directed' },
-  { term: 'antacids', rx: /\bantacid(s)?\b/i, priority: 88, warning: 'separate from antacids when directed' },
-  { term: 'vitamin K', rx: /vitamin\s*K/i, priority: 86, warning: 'keep vitamin K intake consistent if directed' },
-  { term: 'tyramine', rx: /\btyramine\b/i, priority: 86, warning: 'avoid high-tyramine foods if directed' },
-  { term: 'caffeine', rx: /\bcaffeine\b|\bcoffee\b|\btea\b/i, priority: 84, warning: 'limit caffeine if directed' },
-  { term: 'fruit juice', rx: /\bfruit\s+juice\b|\bapple juice\b|\borange juice\b/i, priority: 84, warning: 'separate from fruit juice when directed' },
-  { term: 'high-fat meal', rx: /high[-\s]?fat\s+(?:meal|food)|fatty meal/i, priority: 82, warning: 'follow high-fat meal instructions' },
-  { term: 'tube feeding', rx: /enteral\s+feeding|tube[-\s]?feeding|feeding\s+tube|nasogastric|gastrostomy/i, priority: 82, warning: 'follow tube-feeding instructions' },
-  { term: 'food', rx: /\bfood\b|\bmeal(s)?\b|\bfed\b|\bfast(?:ing|ed)?\b|empty stomach/i, priority: 50 },
-  { term: 'absorption', rx: /\babsorption\b|\bAUC\b|\bCmax\b|exposure|pharmacokinetic/i, priority: 20 }
-];
+  { term: 'grapefruit juice', priority: 100, warning: 'avoid grapefruit juice', aliases: ['grapefruit juice', 'grapefruit'] },
+  { term: 'alcohol', priority: 95, warning: 'avoid or ask about alcohol', aliases: ['alcohol', 'alcoholic', 'ethanol'] },
+  { term: 'dairy', priority: 90, warning: 'separate from dairy when directed', aliases: ['dairy', 'milk', 'yogurt'] },
+  { term: 'calcium', priority: 90, warning: 'separate from calcium/mineral products when directed', aliases: ['calcium'], validator: validateMineralTerm },
+  { term: 'iron', priority: 90, warning: 'separate from iron/mineral products when directed', aliases: ['iron', 'ferrous'], validator: validateMineralTerm },
+  { term: 'magnesium', priority: 90, warning: 'separate from magnesium/mineral products when directed', aliases: ['magnesium'], validator: validateMineralTerm },
+  { term: 'aluminum', priority: 90, warning: 'separate from aluminum/mineral products when directed', aliases: ['aluminum', 'aluminium'], validator: validateMineralTerm },
+  { term: 'antacids', priority: 88, warning: 'separate from antacids when directed', aliases: ['antacid', 'antacids'] },
+  { term: 'vitamin K', priority: 86, warning: 'keep vitamin K intake consistent if directed', aliases: ['vitamin K'] },
+  { term: 'tyramine', priority: 86, warning: 'avoid high-tyramine foods if directed', aliases: ['tyramine'] },
+  { term: 'caffeine', priority: 84, warning: 'limit caffeine if directed', aliases: ['caffeine', 'coffee', 'tea'] },
+  { term: 'fruit juice', priority: 84, warning: 'separate from fruit juice when directed', aliases: ['fruit juice', 'apple juice', 'orange juice'] },
+  { term: 'high-fat meal', priority: 82, warning: 'follow high-fat meal instructions', aliases: ['high fat meal', 'high fat food', 'fatty meal'] },
+  { term: 'tube feeding', priority: 82, warning: 'follow tube-feeding instructions', aliases: ['enteral feeding', 'tube feeding', 'feeding tube', 'nasogastric', 'gastrostomy'] },
+  { term: 'food', priority: 50, aliases: ['food', 'meal', 'meals', 'fed', 'fasting', 'fasted', 'empty stomach'] },
+  { term: 'absorption', priority: 20, aliases: ['absorption', 'AUC', 'Cmax', 'exposure', 'pharmacokinetic'] }
+].map(prepareTerm);
 const WARNING_RX = /avoid|do not|not recommended|separate|increase(?:d|s)?\s+(?:risk|exposure|AUC|Cmax)|reduce(?:d|s)?\s+absorption|decrease(?:d|s)?\s+absorption|contraindicat|should not|must not|limit/i;
 
 export default { async fetch(request, env) { return handleRequest(request, env); } };
@@ -91,11 +95,17 @@ async function fetchLabels(drug) {
 }
 function esc(s) { return String(s).replace(/["\\]/g, ''); }
 function flatten(v) { if (v == null) return []; if (typeof v === 'string') return [v]; if (Array.isArray(v)) return v.flatMap(flatten); if (typeof v === 'object') return Object.values(v).flatMap(flatten); return [String(v)]; }
-function collectExcerpts(labels) { const out = []; for (const label of labels) for (const section of LABEL_SECTIONS) for (const text of flatten(label[section])) { const clean = text.replace(/\s+/g, ' ').trim(); if (!clean) continue; const matched = TERMS.filter(t => t.rx.test(clean)); if (!matched.length) continue; const score = Math.max(...matched.map(t => t.priority)) + (WARNING_RX.test(clean) ? 25 : 0); out.push({ section, text: trimExcerpt(clean, matched), matchedTerms: matched.sort((a,b)=>b.priority-a.priority).map(t=>t.term), score, ...sourceMeta(label) }); } return out; }
-function trimExcerpt(text, matched) { const i = Math.min(...matched.map(t => { const m = text.search(t.rx); return m < 0 ? 999999 : m; })); const start = Math.max(0, i - 180); return (start ? '...' : '') + text.slice(start, start + 700) + (text.length > start + 700 ? '...' : ''); }
+function collectExcerpts(labels) { const out = []; for (const label of labels) for (const section of LABEL_SECTIONS) for (const text of flatten(label[section])) { const clean = text.replace(/\s+/g, ' ').trim(); if (!clean) continue; const matched = findValidatedTerms(clean); if (!matched.length) continue; const score = Math.max(...matched.map(t => t.priority)) + (WARNING_RX.test(clean) ? 25 : 0); out.push({ section, text: trimExcerpt(clean, matched), matchedTerms: matched.sort((a,b)=>b.priority-a.priority).map(t=>t.term), score, ...sourceMeta(label) }); } return out; }
+function trimExcerpt(text, matched) { const i = Math.min(...matched.map(t => t.index ?? 999999)); const start = Math.max(0, i - 180); return (start ? '...' : '') + text.slice(start, start + 700) + (text.length > start + 700 ? '...' : ''); }
+function escapeRegExp(value) { return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+function makeBoundaryTermRegex(term) { const tokens = String(term).match(/[A-Za-z0-9]+/g) || []; if (!tokens.length) return null; return new RegExp(`(^|[^A-Za-z0-9])(${tokens.map(escapeRegExp).join(FLEXIBLE_TERM_SEPARATOR)})(?=$|[^A-Za-z0-9])`, 'gi'); }
+function prepareTerm(term) { const aliases = term.aliases || [term.term]; return { ...term, aliases, patterns: aliases.map(makeBoundaryTermRegex).filter(Boolean) }; }
+function getTermMatches(text, term) { const matches = []; for (const pattern of term.patterns) { pattern.lastIndex = 0; let match; while ((match = pattern.exec(text))) { const phraseIndex = match.index + match[1].length; if (!term.validator || term.validator(term, text, phraseIndex)) matches.push({ index: phraseIndex, value: match[2] }); if (match[0].length === 0) pattern.lastIndex += 1; } } return matches; }
+function findValidatedTerms(text) { return TERMS.map(t => ({ ...t, matches: getTermMatches(text, t) })).filter(t => t.matches.length).map(t => ({ ...t, index: Math.min(...t.matches.map(m => m.index)) })); }
+function validateMineralTerm(term, text, index) { const windowText = text.slice(Math.max(0, index - 80), index + 120); if (MINERAL_EXCLUSION_RX.test(windowText)) return false; return MINERAL_SUPPORT_RX.test(windowText); }
 function sourceMeta(l) { const of = l.openfda || {}; const setId = l.set_id || ''; return { sourceTitle: [first(of.brand_name), first(of.generic_name)].filter(Boolean).join(' / ') || 'FDA label', title: [first(of.brand_name), first(of.generic_name)].filter(Boolean).join(' / ') || 'FDA label', brandName: first(of.brand_name), genericName: first(of.generic_name), manufacturer: first(of.manufacturer_name), effectiveTime: l.effective_time, setId, dailyMedUrl: setId ? `https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=${setId}` : '' }; }
 function first(v) { return Array.isArray(v) ? v[0] : (v || ''); }
-function detectCriticalWarnings(excerpts) { const map = new Map(); for (const e of excerpts) { const text = e.text; for (const t of TERMS.filter(x => x.priority >= 82)) if (t.rx.test(text) && WARNING_RX.test(text)) map.set(t.term, { term: t.term, warning: t.warning, excerpt: e.text, section: e.section }); } return [...map.values()]; }
+function detectCriticalWarnings(excerpts) { const map = new Map(); for (const e of excerpts) { if (!WARNING_RX.test(e.text)) continue; for (const name of e.matchedTerms || []) { const t = TERMS.find(x => x.term === name); if (t?.warning && t.priority >= 82) map.set(t.term, { term: t.term, warning: t.warning, excerpt: e.text, section: e.section }); } } return [...map.values()]; }
 function buildFindings(excerpts, critical) { const findings = critical.map(c => `${cap(c.term)}: ${c.warning}.`); for (const e of excerpts.slice(0, 6)) findings.push(`${e.section.replace(/_/g, ' ')} mentions ${e.matchedTerms.join(', ')}.`); return [...new Set(findings)].slice(0, 8); }
 function deterministicSummary(findings, critical, terms) { let quick = terms.includes('food') ? 'Review the FDA label food instructions found below.' : 'No clear with-food or without-food instruction was found.'; if (critical.some(c => c.term === 'grapefruit juice')) {
     quick = 'Can be taken with or without food, but avoid grapefruit juice.';
@@ -109,3 +119,5 @@ async function suggest(q) { q = q.trim(); if (q.length < 2) return { suggestions
 async function fetchMedline(drug) { const url = `${MEDLINE_CONNECT_URL}?mainSearchCriteria.v.cs=2.16.840.1.113883.6.88&mainSearchCriteria.v.dn=${encodeURIComponent(drug)}&knowledgeResponseType=application/json`; const r = await fetch(url); if (!r.ok) return null; const d = await r.json(); const e = d.feed?.entry?.[0]; return e ? { title: e.title?._value || e.title, url: e.link?.[0]?.href, summary: e.summary?._value || e.summary, source: 'MedlinePlus, National Library of Medicine' } : null; }
 function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
 function json(data, status = 200) { return new Response(JSON.stringify(data, null, 2), { status, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json; charset=utf-8' } }); }
+
+export { escapeRegExp, makeBoundaryTermRegex, findValidatedTerms };

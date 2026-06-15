@@ -317,8 +317,32 @@
     return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 
-  function renderHighlightedExcerptText(text, matchedTerms) {
-    const escapedText = escapeHtml(text || 'Excerpt text was not available.');
+  function makeBoundaryTermRegex(term) {
+    const tokens = String(term).match(/[A-Za-z0-9]+/g) || [];
+    if (!tokens.length) {
+      return null;
+    }
+
+    return new RegExp(`(^|[^A-Za-z0-9])(${tokens.map(escapeRegExp).join('[\\s\\-–—/]+')})(?=$|[^A-Za-z0-9])`, 'gi');
+  }
+
+  function isKnownFalsePositiveTermContext(term, fullText, index) {
+    const normalizedTerm = String(term || '').toLowerCase();
+    const localText = String(fullText || '').slice(Math.max(0, index - 40), index + 80).toLowerCase();
+
+    if (normalizedTerm === 'tyramine') {
+      return /cholestyramine/.test(localText);
+    }
+
+    if (normalizedTerm === 'calcium') {
+      return /calcium[\s\-–—/]+(?:channel[\s\-–—/]+blocker(?:s)?|channel[\s\-–—/]+blocking[\s\-–—/]+drug(?:s)?|channel(?:s)?|influx|channel[\s\-–—/]+antagonist(?:s)?|antagonist(?:s)?)/.test(localText);
+    }
+
+    return false;
+  }
+
+  function highlightMatchedTerms(text, matchedTerms) {
+    const sourceText = text || 'Excerpt text was not available.';
     const highlightTerms = normalizeMatchedTerms(matchedTerms).filter(function (term) {
       return term.length > 2;
     }).sort(function (a, b) {
@@ -326,12 +350,62 @@
     });
 
     if (!highlightTerms.length) {
-      return escapedText;
+      return escapeHtml(sourceText);
     }
 
-    const pattern = new RegExp('(' + highlightTerms.map(escapeRegExp).join('|') + ')', 'gi');
+    const ranges = [];
 
-    return escapedText.replace(pattern, '<mark class="excerpt-highlight">$1</mark>');
+    highlightTerms.forEach(function (term) {
+      const pattern = makeBoundaryTermRegex(term);
+      if (!pattern) {
+        return;
+      }
+
+      let match;
+      while ((match = pattern.exec(sourceText))) {
+        const start = match.index + match[1].length;
+        const end = start + match[2].length;
+        if (!isKnownFalsePositiveTermContext(term, sourceText, start)) {
+          ranges.push({ start, end });
+        }
+        if (match[0].length === 0) {
+          pattern.lastIndex += 1;
+        }
+      }
+    });
+
+    if (!ranges.length) {
+      return escapeHtml(sourceText);
+    }
+
+    ranges.sort(function (a, b) {
+      return a.start - b.start || b.end - a.end;
+    });
+
+    const mergedRanges = [];
+    ranges.forEach(function (range) {
+      const previous = mergedRanges[mergedRanges.length - 1];
+      if (!previous || range.start > previous.end) {
+        mergedRanges.push(range);
+      } else if (range.end > previous.end) {
+        previous.end = range.end;
+      }
+    });
+
+    let output = '';
+    let cursor = 0;
+    mergedRanges.forEach(function (range) {
+      output += escapeHtml(sourceText.slice(cursor, range.start));
+      output += `<mark class="excerpt-highlight">${escapeHtml(sourceText.slice(range.start, range.end))}</mark>`;
+      cursor = range.end;
+    });
+    output += escapeHtml(sourceText.slice(cursor));
+
+    return output;
+  }
+
+  function renderHighlightedExcerptText(text, matchedTerms) {
+    return highlightMatchedTerms(text, matchedTerms);
   }
 
   function renderExcerpts(excerpts, sources) {
