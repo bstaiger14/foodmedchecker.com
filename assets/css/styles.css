@@ -152,8 +152,8 @@ h1, h2, h3, p { margin-top: 0; }
 
 h1 {
   max-width: 760px;
-  margin-bottom: 22px;
-  font-size: clamp(2.35rem, 5.15vw, 4.35rem);
+  margin-bottom: 18px;
+  font-size: clamp(2.25rem, 4.75vw, 4rem);
   line-height: 1.02;
   letter-spacing: -0.07em;
 }
@@ -651,8 +651,16 @@ button {
 
 .result-disclaimer {
   margin-top: 18px;
-  padding-top: 18px;
-  border-top: 1px solid var(--border);
+  padding: 16px 18px;
+  border: 1px solid #cfe0fb;
+  border-radius: 16px;
+  background: #f8fbff;
+  line-height: 1.55;
+}
+
+.result-disclaimer-card {
+  grid-column: 1 / -1;
+  margin-top: -2px;
 }
 
 .technical-details {
@@ -668,8 +676,8 @@ button {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  margin: -6px 0 16px;
-  padding: 9px 14px;
+  margin: 4px 0 22px;
+  padding: 8px 14px;
   border: 1px solid #c7e3ff;
   border-radius: 999px;
   color: var(--blue-dark);
@@ -713,6 +721,7 @@ button {
   box-shadow: 0 12px 26px rgba(25, 72, 125, 0.18);
   object-fit: cover;
   object-position: center top;
+  transform: translate(-10px, -8px);
 }
 
 .pill-eyebrow {
