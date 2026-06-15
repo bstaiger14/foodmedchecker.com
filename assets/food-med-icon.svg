@@ -1,14 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
   <title id="title">Food Med Checker icon</title>
-  <defs>
-    <linearGradient id="bg" x1="10" x2="54" y1="6" y2="58" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#1d7bf2"/>
-      <stop offset="1" stop-color="#0e4fae"/>
-    </linearGradient>
-  </defs>
-  <rect width="64" height="64" rx="18" fill="url(#bg)"/>
-  <circle cx="25" cy="25" r="11" fill="#fff" opacity=".96"/>
+  <rect x="1.5" y="1.5" width="61" height="61" rx="17" fill="#ffffff" stroke="#dbe7f3" stroke-width="3"/>
+  <circle cx="25" cy="25" r="11" fill="#eaf7ff" stroke="#1769e0" stroke-width="2"/>
   <path d="M18 25h14M25 18v14" stroke="#1769e0" stroke-width="4" stroke-linecap="round"/>
-  <path d="M40.5 18.5c6.2 0 11 4.8 11 11 0 10.2-11 16-11 16s-11-5.8-11-16c0-6.2 4.8-11 11-11Z" fill="#dff2ff" stroke="#fff" stroke-width="3"/>
+  <path d="M40.5 18.5c6.2 0 11 4.8 11 11 0 10.2-11 16-11 16s-11-5.8-11-16c0-6.2 4.8-11 11-11Z" fill="#dff2ff" stroke="#2ab37e" stroke-width="3"/>
   <path d="M36 29.5h9M40.5 25v9" stroke="#0e4fae" stroke-width="3" stroke-linecap="round"/>
 </svg>
