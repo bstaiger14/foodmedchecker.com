@@ -387,7 +387,7 @@
     }
 
     if (data.recordCount !== undefined && data.recordCount !== null) {
-      metadata.push(`FDA label records scanned: ${escapeHtml(data.recordCount)} <span class="sources-info"><button class="sources-info-trigger" type="button" aria-label="Why are there so many sources?" aria-describedby="sources-info-text">i</button><span class="sources-info-tooltip" id="sources-info-text" role="tooltip">Why are there so many sources? This checker searches all FDA labels. Most drugs have multiple manufacturers, and each is required to submit unique labels to the FDA. We search all of them.</span></span>`);
+      metadata.push(`FDA label records scanned: ${escapeHtml(data.recordCount)}`);
     }
 
     if (data.searchedAt) {
@@ -430,6 +430,10 @@
         </section>
         <section class="result-section-card excerpt-section">
           <h3>Source Excerpts</h3>
+          <div class="sources-info-card">
+            <span class="sources-info-icon" aria-hidden="true">i</span>
+            <p><strong>Why are there so many sources?</strong> This checker searches all FDA labels. Most drugs have multiple manufacturers, and each is required to submit unique labels to the FDA. We search all of them.</p>
+          </div>
           ${renderExcerpts(data.sourceExcerpts, data.sources)}
         </section>
       </div>
