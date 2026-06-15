@@ -1177,3 +1177,123 @@ button {
     padding: 26px;
   }
 }
+
+
+/* Full-width above-the-fold hero */
+.hero {
+  position: relative;
+  min-height: calc(100svh - 76px);
+  display: flex;
+  align-items: center;
+  padding-top: clamp(36px, 7vh, 72px);
+  padding-bottom: clamp(42px, 8vh, 82px);
+  overflow: hidden;
+}
+
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 7% -12% auto auto;
+  width: min(52vw, 620px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(23, 105, 224, 0.12), rgba(23, 105, 224, 0));
+  pointer-events: none;
+}
+
+.hero-grid {
+  position: relative;
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+
+.hero-copy {
+  width: min(100%, 980px);
+}
+
+.hero-copy h1 {
+  max-width: 980px;
+  margin-bottom: 24px;
+  font-size: clamp(3.2rem, 8.6vw, 7rem);
+}
+
+.hero-subtitle {
+  max-width: 900px;
+  margin-bottom: 0;
+  font-size: clamp(1.16rem, 2.2vw, 1.55rem);
+}
+
+.hero-highlights {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  max-width: 980px;
+  margin: 24px 0 0;
+}
+
+.hero-highlights span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 1px solid #c7e3ff;
+  border-radius: 999px;
+  color: var(--blue-dark);
+  background: linear-gradient(180deg, #ffffff 0%, var(--surface-blue) 100%);
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.hero-highlights span::before {
+  content: "✓";
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  border-radius: 50%;
+  color: #ffffff;
+  background: var(--blue);
+  font-size: 0.78rem;
+}
+
+.search-card {
+  max-width: 860px;
+  margin-top: 30px;
+  padding: clamp(18px, 2.8vw, 26px);
+}
+
+.search-note {
+  font-size: 1rem;
+}
+
+.example-area {
+  max-width: 900px;
+}
+
+@media (max-width: 860px) {
+  .hero {
+    min-height: auto;
+    align-items: flex-start;
+  }
+
+  .hero-copy h1 {
+    font-size: clamp(2.75rem, 12vw, 5.4rem);
+  }
+}
+
+@media (max-width: 620px) {
+  .hero {
+    padding-top: 38px;
+    padding-bottom: 48px;
+  }
+
+  .hero-copy h1 {
+    margin-bottom: 18px;
+  }
+
+  .hero-highlights span {
+    width: 100%;
+    border-radius: 16px;
+  }
+}
