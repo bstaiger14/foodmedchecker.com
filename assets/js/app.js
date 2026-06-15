@@ -15,15 +15,28 @@
   const defaultButtonText = submitButton ? submitButton.textContent : 'Check Food Instructions';
   const loadingFacts = [
     'This may take a minute while we scan available FDA labels.',
-    'Fun drug fact: Viagra started as a chest-pain drug. The side effect stole the show.',
-    'Fun drug fact: Premarin’s name comes from PREgnant MARe urINe. Seriously.',
-    'Fun drug fact: Lasix got its name because it “lasts six” hours.',
-    'Fun drug fact: Warfarin’s story starts with moldy sweet clover and bleeding cattle.',
-    'Fun drug fact: Warfarin is partly named after WARF: Wisconsin Alumni Research Foundation.',
+    'Fun drug fact: Viagra was supposed to help the heart. The side effect became the product.',
+    'Fun drug fact: Premarin’s name comes from PREgnant MARe urINe. Yes, really.',
+    'Fun drug fact: Ritalin was named after Rita, the inventor’s wife.',
+    'Fun drug fact: Lasix is pharmacy wordplay: it “lasts six” hours.',
+    'Fun drug fact: Warfarin started with moldy clover and bleeding cows.',
+    'Fun drug fact: Warfarin’s “WARF” comes from Wisconsin Alumni Research Foundation.',
+    'Fun drug fact: Ivermectin’s ancestor came from soil near a Japanese golf course.',
+    'Fun drug fact: Rapamycin was named after Rapa Nui, aka Easter Island.',
+    'Fun drug fact: Exenatide traces back to Gila monster saliva.',
+    'Fun drug fact: Captopril was inspired by Brazilian pit viper venom.',
+    'Fun drug fact: Ziconotide started as cone snail venom.',
+    'Fun drug fact: Botulinum’s name comes from “botulus,” Latin for sausage.',
+    'Fun drug fact: Morphine was named after Morpheus, the god of dreams.',
+    'Fun drug fact: Codeine comes from the Greek word for “poppy head.”',
+    'Fun drug fact: Aspirin hides “acetyl” + “Spiraea” in its name.',
+    'Fun drug fact: Bayer once sold heroin as a cough medicine.',
+    'Fun drug fact: Heroin’s name likely comes from German for “heroic” or “strong.”',
+    'Fun drug fact: Taxol’s story starts in bark from the Pacific yew tree.',
+    'Fun drug fact: Penicillin’s mold name comes from a word for “paintbrush.”',
     'Fun drug fact: Rogaine began as a blood-pressure drug. Hair growth was the surprise.',
     'Fun drug fact: Nystatin was named after New York State.',
     'Fun drug fact: Tylenol hides chemistry in its name: aceTYL + phenOL.',
-    'Fun drug fact: Penicillin comes from Penicillium mold, named for its paintbrush shape.',
     'Fun drug fact: Insulin gets its name from “insula,” Latin for island.'
   ];
   let loadingFactTimer = null;
@@ -223,6 +236,31 @@
     }
   }
 
+  function getResolvedExcerptText(source) {
+    if (!source || typeof source !== 'object') {
+      return '';
+    }
+
+    const excerptFields = [
+      source.supportingExcerpt,
+      source.excerpt,
+      source.text,
+      source.excerptText,
+      source.sourceText,
+      source.snippet
+    ];
+
+    for (let index = 0; index < excerptFields.length; index += 1) {
+      const value = formatValue(excerptFields[index]).trim();
+
+      if (value) {
+        return value;
+      }
+    }
+
+    return '';
+  }
+
   function updateLoadingFact() {
     const factElement = document.querySelector('#loading-fact-text');
 
@@ -242,7 +280,7 @@
 
   function startLoadingFacts() {
     stopLoadingFacts();
-    loadingFactIndex = 0;
+    loadingFactIndex = Math.floor(Math.random() * loadingFacts.length);
     updateLoadingFact();
     loadingFactTimer = window.setInterval(updateLoadingFact, 5000);
   }
@@ -472,8 +510,8 @@
       const section = excerpt.section ? `<span>${escapeHtml(excerpt.section)}</span>` : '';
       const matchedTerms = formatValue(excerpt.matchedTerms);
       const terms = matchedTerms ? `<span>Matched: ${escapeHtml(matchedTerms)}</span>` : '';
-      const text = excerpt.text || 'Excerpt text was not available.';
-      const highlightedText = renderHighlightedExcerptText(text, excerpt.matchedTerms);
+      const resolvedExcerptText = getResolvedExcerptText(excerpt);
+      const highlightedText = renderHighlightedExcerptText(resolvedExcerptText || 'Excerpt text was not available.', excerpt.matchedTerms);
       const brandName = excerpt.brandName || (matchingSource ? matchingSource.brandName : '');
       const genericName = excerpt.genericName || (matchingSource ? matchingSource.genericName : '');
       const manufacturer = excerpt.manufacturer || (matchingSource ? matchingSource.manufacturer : '');
