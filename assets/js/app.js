@@ -512,6 +512,10 @@
     return `<p class="result-metadata">${metadata.join(' <span aria-hidden="true">•</span> ')}</p>`;
   }
 
+  function renderResultDisclaimer(drugName) {
+    return `This is not medical advice. It is a summary of the data contained in FDA approval labeling for ${escapeHtml(drugName)}. Always speak with your pharmacist and doctor before making changes to your medication regimen.`;
+  }
+
   function renderApiResult(data, rawDrugName) {
     const drugName = data.drug || rawDrugName;
     const status = data.status || (data.ok ? 'success' : 'completed');
@@ -529,6 +533,7 @@
           <h3>Practical Takeaway</h3>
           <p>${escapeHtml(getPracticalTakeaway(data))}</p>
         </section>
+        <div class="result-disclaimer result-disclaimer-card">${renderResultDisclaimer(drugName)}</div>
         ${renderDrugSummary(data.drugSummary)}
         <section class="result-section-card">
           <h3>FDA Label Food Findings</h3>
@@ -548,7 +553,6 @@
           ${renderExcerpts(data.sourceExcerpts, data.sources)}
         </section>
       </div>
-      <div class="result-disclaimer">${escapeHtml(data.disclaimer || DEFAULT_DISCLAIMER)}</div>
     `);
   }
 
