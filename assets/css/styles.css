@@ -1257,7 +1257,7 @@ button {
 .hero-copy h1 {
   max-width: 980px;
   margin-bottom: 24px;
-  font-size: clamp(3.2rem, 8.6vw, 7rem);
+  font-size: clamp(3.2rem, 8.6vw, 6.667rem);
 }
 
 .hero-subtitle {
@@ -1455,7 +1455,7 @@ h1 {
 }
 
 .powered-by {
-  margin: -10px 0 18px;
+  margin: 0 0 18px;
   vertical-align: middle;
 }
 
