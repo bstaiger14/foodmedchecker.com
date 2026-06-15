@@ -494,6 +494,61 @@ button {
 
 .loading-card p { margin: 4px 0 0; color: var(--muted); }
 
+.loading-copy {
+  min-width: 0;
+}
+
+.loading-fact-box {
+  position: relative;
+  min-height: 92px;
+  margin-top: 16px;
+  padding: 14px 16px;
+  border: 1px solid rgba(23, 105, 224, 0.18);
+  border-radius: 18px;
+  overflow: hidden;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(228, 241, 255, 0.88));
+  box-shadow: 0 14px 30px rgba(23, 105, 224, 0.09);
+}
+
+.loading-fact-box::after {
+  content: "";
+  position: absolute;
+  inset: auto -18px -30px auto;
+  width: 86px;
+  height: 86px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(31, 184, 205, 0.22), transparent 68%);
+}
+
+.loading-fact-kicker {
+  display: inline-flex;
+  margin-bottom: 6px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  color: var(--blue-dark);
+  background: #dff3ff;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.loading-card .loading-fact-text {
+  margin: 0;
+  color: #243b53;
+  font-size: 0.98rem;
+  font-weight: 700;
+  line-height: 1.45;
+  opacity: 0;
+  transform: translateY(10px) scale(0.98);
+  transition: opacity 220ms ease, transform 220ms ease;
+}
+
+.loading-card .loading-fact-text.is-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
 .loading-spinner {
   flex: 0 0 auto;
   width: 34px;
@@ -1684,7 +1739,7 @@ input {
   .ticker-track {
     width: max-content;
     max-width: none;
-    animation: none;
+    animation: ticker-scroll 34s linear infinite;
   }
 
   .hero-highlights span,
@@ -1692,7 +1747,7 @@ input {
     width: auto;
     max-width: calc(100vw - 48px);
     flex: 0 0 auto;
-    white-space: normal;
+    white-space: nowrap;
   }
 
   .search-card {
