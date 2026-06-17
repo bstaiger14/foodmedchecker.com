@@ -1,5 +1,17 @@
 (function () {
   const API_BASE_URL = 'https://foodmedchecker-api.curly-lake-5061.workers.dev';
+  const RECENT_SEARCHES_GITHUB_CONFIG = {
+    enabled: true,
+    owner: 'bstaiger14',
+    repo: 'foodmedchecker',
+    branch: 'main',
+    path: 'data/recent-drug-searches.json',
+    token: ''
+  };
+  const RECENT_SEARCHES_MAX_CARDS = 25;
+  const RECENT_SEARCHES_DESKTOP_VISIBLE = 8;
+  const RECENT_SEARCHES_MOBILE_VISIBLE = 6;
+
   const DEFAULT_DISCLAIMER = 'Food Med Checker summarizes FDA labeling for educational purposes only. It is not medical advice and does not replace guidance from a pharmacist, physician, or other qualified healthcare professional.';
 
   const form = document.querySelector('#med-search-form');
@@ -8,6 +20,8 @@
   const suggestionsList = document.querySelector('#suggestions-list');
   const year = document.querySelector('#year');
   const chips = document.querySelectorAll('.example-chip');
+  const recentChecksSection = document.querySelector('#recent-medication-checks');
+  const recentChecksGrid = document.querySelector('#recent-medication-checks-grid');
 
   const cookieBanner = document.querySelector('#cookie-banner');
   const cookieAcceptButton = document.querySelector('#cookie-accept-button');
@@ -44,6 +58,7 @@
   let randomizedLoadingFacts = loadingFacts.slice();
   let suggestionDebounceTimer = null;
   let suggestionAbortController = null;
+  let recentMedicationChecks = [];
 
   if (year) {
     year.textContent = new Date().getFullYear();
@@ -90,6 +105,220 @@
     });
   }
 
+
+
+  function normalizeRecentSearchSlug(drugName) {
+    return String(drugName || '')
+      .toLowerCase()
+      .normalize('NFKD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '') || 'medication-check';
+  }
+
+  function normalizeRecentSearchBadge(badge) {
+    const value = String(badge || '').trim().toLowerCase();
+    const badges = {
+      'no special food issue found': 'No special food issue found',
+      'follow label directions': 'Follow label directions',
+      'use caution': 'Use caution',
+      'avoid/separate': 'Avoid/Separate',
+      'avoid / separate': 'Avoid/Separate',
+      'avoid separate': 'Avoid/Separate'
+    };
+
+    return badges[value] || 'Follow label directions';
+  }
+
+  function getBadgeClassName(badge) {
+    const normalized = normalizeRecentSearchBadge(badge).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    return `recent-check-badge recent-check-badge-${normalized}`;
+  }
+
+  function normalizeRecentSearchCard(card) {
+    const drugName = String(card && card.drugName || '').trim();
+    const quickAnswer = String(card && card.quickAnswer || '').trim();
+
+    if (!drugName || !quickAnswer) {
+      return null;
+    }
+
+    return {
+      slug: String(card.slug || normalizeRecentSearchSlug(drugName)).trim() || normalizeRecentSearchSlug(drugName),
+      drugName: drugName,
+      quickAnswer: quickAnswer,
+      foodSafetyBadge: normalizeRecentSearchBadge(card.foodSafetyBadge),
+      searchedCount: Math.max(1, Number(card.searchedCount) || 1),
+      lastSearchedAt: card.lastSearchedAt || new Date().toISOString()
+    };
+  }
+
+  function mergeRecentSearchCards(existingCards, newCards) {
+    const merged = new Map();
+
+    [].concat(existingCards || [], newCards || []).forEach(function (card) {
+      const normalizedCard = normalizeRecentSearchCard(card);
+      if (!normalizedCard) {
+        return;
+      }
+
+      const previous = merged.get(normalizedCard.slug);
+      if (!previous || new Date(normalizedCard.lastSearchedAt).getTime() >= new Date(previous.lastSearchedAt).getTime()) {
+        merged.set(normalizedCard.slug, Object.assign({}, previous || {}, normalizedCard, {
+          searchedCount: Math.max(normalizedCard.searchedCount, previous ? previous.searchedCount || 1 : 1)
+        }));
+      }
+    });
+
+    return Array.from(merged.values()).sort(function (a, b) {
+      return new Date(b.lastSearchedAt).getTime() - new Date(a.lastSearchedAt).getTime();
+    }).slice(0, RECENT_SEARCHES_MAX_CARDS);
+  }
+
+  function getVisibleRecentSearchLimit() {
+    return window.matchMedia && window.matchMedia('(max-width: 620px)').matches ? RECENT_SEARCHES_MOBILE_VISIBLE : RECENT_SEARCHES_DESKTOP_VISIBLE;
+  }
+
+  function renderRecentMedicationChecks(cards) {
+    if (!recentChecksSection || !recentChecksGrid) {
+      return;
+    }
+
+    const usableCards = mergeRecentSearchCards([], cards).slice(0, getVisibleRecentSearchLimit());
+    if (!usableCards.length) {
+      recentChecksSection.classList.add('hidden');
+      recentChecksGrid.innerHTML = '';
+      return;
+    }
+
+    recentChecksGrid.innerHTML = usableCards.map(function (card) {
+      const checkedText = `Checked ${card.searchedCount} ${card.searchedCount === 1 ? 'time' : 'times'}`;
+      return `
+        <article class="recent-check-card">
+          <div class="recent-check-card-header">
+            <h3>${escapeHtml(card.drugName)}</h3>
+            <span class="${escapeHtml(getBadgeClassName(card.foodSafetyBadge))}">${escapeHtml(normalizeRecentSearchBadge(card.foodSafetyBadge))}</span>
+          </div>
+          <p class="recent-check-answer">${escapeHtml(card.quickAnswer)}</p>
+          <div class="recent-check-card-footer">
+            <span>${escapeHtml(checkedText)}</span>
+            <button class="recent-check-action" type="button" data-drug-name="${escapeHtml(card.drugName)}">Check this drug</button>
+          </div>
+        </article>
+      `;
+    }).join('');
+
+    recentChecksSection.classList.remove('hidden');
+  }
+
+  async function loadRecentMedicationChecks() {
+    if (!recentChecksSection || !recentChecksGrid) {
+      return;
+    }
+
+    try {
+      const response = await fetch('/data/recent-drug-searches.json', { headers: { Accept: 'application/json' } });
+      if (!response.ok) {
+        recentChecksSection.classList.add('hidden');
+        return;
+      }
+
+      const cards = await response.json();
+      recentMedicationChecks = mergeRecentSearchCards([], cards);
+      renderRecentMedicationChecks(recentMedicationChecks);
+    } catch (error) {
+      recentChecksSection.classList.add('hidden');
+      console.log('Food Med Checker recent checks load skipped:', error.message);
+    }
+  }
+
+  function looksLikeFailedQuickAnswer(quickAnswer) {
+    return /(?:no fda label results found|could not complete|try again|no results? found|scan unavailable)/i.test(String(quickAnswer || ''));
+  }
+
+  function addOrUpdateRecentMedicationCheck(result, searchedDrug) {
+    const quickAnswer = String(result && result.quickAnswer || '').trim();
+    const drugName = String(result && (result.drugName || result.drug || result.name) || searchedDrug || '').trim();
+    const badge = result && (result.foodSafetyBadge || (result.aiSummary && result.aiSummary.foodSafetyBadge));
+    const status = String(result && result.status || '').toLowerCase();
+
+    if (!(result && (result.success === true || result.ok === true)) || !quickAnswer || !drugName || status === 'no_results' || looksLikeFailedQuickAnswer(quickAnswer)) {
+      return;
+    }
+
+    const slug = normalizeRecentSearchSlug(drugName);
+    const existing = recentMedicationChecks.find(function (card) { return card.slug === slug; });
+    const updatedCard = {
+      slug: slug,
+      drugName: drugName,
+      quickAnswer: quickAnswer,
+      foodSafetyBadge: normalizeRecentSearchBadge(badge),
+      searchedCount: existing ? (Number(existing.searchedCount) || 1) + 1 : 1,
+      lastSearchedAt: new Date().toISOString()
+    };
+
+    recentMedicationChecks = mergeRecentSearchCards(recentMedicationChecks.filter(function (card) { return card.slug !== slug; }), [updatedCard]);
+    renderRecentMedicationChecks(recentMedicationChecks);
+    persistRecentSearchesToGitHub(recentMedicationChecks);
+  }
+
+  function encodeBase64Unicode(value) {
+    return btoa(unescape(encodeURIComponent(value)));
+  }
+
+  function decodeBase64Unicode(value) {
+    return decodeURIComponent(escape(atob(String(value || '').replace(/\n/g, ''))));
+  }
+
+  async function persistRecentSearchesToGitHub(cards) {
+    const config = RECENT_SEARCHES_GITHUB_CONFIG;
+    if (!config.enabled || !config.token) {
+      return;
+    }
+
+    const url = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${config.path}`;
+
+    try {
+      const getResponse = await fetch(`${url}?ref=${encodeURIComponent(config.branch)}`, {
+        headers: {
+          Accept: 'application/vnd.github+json',
+          Authorization: `Bearer ${config.token}`,
+          'X-GitHub-Api-Version': '2022-11-28'
+        }
+      });
+
+      if (!getResponse.ok) {
+        throw new Error(`GitHub content fetch failed with status ${getResponse.status}`);
+      }
+
+      const fileData = await getResponse.json();
+      const existingCards = JSON.parse(decodeBase64Unicode(fileData.content));
+      const mergedCards = mergeRecentSearchCards(existingCards, cards);
+      const content = `${JSON.stringify(mergedCards, null, 2)}\n`;
+
+      const putResponse = await fetch(url, {
+        method: 'PUT',
+        headers: {
+          Accept: 'application/vnd.github+json',
+          Authorization: `Bearer ${config.token}`,
+          'Content-Type': 'application/json',
+          'X-GitHub-Api-Version': '2022-11-28'
+        },
+        body: JSON.stringify({
+          message: 'Update recent medication food checks',
+          content: encodeBase64Unicode(content),
+          sha: fileData.sha,
+          branch: config.branch
+        })
+      });
+
+      if (!putResponse.ok) {
+        throw new Error(`GitHub content update failed with status ${putResponse.status}`);
+      }
+    } catch (error) {
+      console.log('Food Med Checker recent checks GitHub update failed:', error.message);
+    }
+  }
 
   function normalizeSuggestionList(payload) {
     if (Array.isArray(payload)) {
@@ -707,6 +936,7 @@
       }
 
       renderApiResult(data, drugName);
+      addOrUpdateRecentMedicationCheck(data, drugName);
     } catch (error) {
       renderError(error.message);
     } finally {
@@ -762,6 +992,28 @@
       });
     }
   }
+
+  if (recentChecksGrid) {
+    recentChecksGrid.addEventListener('click', function (event) {
+      const action = event.target.closest('.recent-check-action');
+      if (!action || !input) {
+        return;
+      }
+
+      const drugName = action.getAttribute('data-drug-name') || '';
+      input.value = drugName;
+      if (form) {
+        form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      runSearch(drugName);
+    });
+  }
+
+  window.addEventListener('resize', function () {
+    renderRecentMedicationChecks(recentMedicationChecks);
+  });
+
+  loadRecentMedicationChecks();
 
   chips.forEach(function (chip) {
     chip.addEventListener('click', function () {

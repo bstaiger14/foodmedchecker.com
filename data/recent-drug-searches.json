@@ -1,0 +1,66 @@
+[
+  {
+    "slug": "silenor-3mg",
+    "drugName": "Silenor 3mg",
+    "quickAnswer": "Take Silenor 3mg within 30 minutes of bedtime, but do not take it within 3 hours of a meal.",
+    "foodSafetyBadge": "Use caution",
+    "searchedCount": 1,
+    "lastSearchedAt": "2026-06-17T12:00:00.000Z"
+  },
+  {
+    "slug": "warfarin",
+    "drugName": "Warfarin",
+    "quickAnswer": "Warfarin can be taken with or without food, but keep vitamin K foods like leafy greens consistent.",
+    "foodSafetyBadge": "Use caution",
+    "searchedCount": 1,
+    "lastSearchedAt": "2026-06-17T12:00:00.000Z"
+  },
+  {
+    "slug": "metformin",
+    "drugName": "Metformin",
+    "quickAnswer": "Metformin is usually taken with meals to reduce stomach upset.",
+    "foodSafetyBadge": "Follow label directions",
+    "searchedCount": 1,
+    "lastSearchedAt": "2026-06-17T12:00:00.000Z"
+  },
+  {
+    "slug": "levothyroxine",
+    "drugName": "Levothyroxine",
+    "quickAnswer": "Take levothyroxine on an empty stomach with water, usually 30 to 60 minutes before breakfast.",
+    "foodSafetyBadge": "Use caution",
+    "searchedCount": 1,
+    "lastSearchedAt": "2026-06-17T12:00:00.000Z"
+  },
+  {
+    "slug": "alendronate",
+    "drugName": "Alendronate",
+    "quickAnswer": "Take alendronate first thing in the morning with plain water, before any food, drink, or other medicine.",
+    "foodSafetyBadge": "Avoid/Separate",
+    "searchedCount": 1,
+    "lastSearchedAt": "2026-06-17T12:00:00.000Z"
+  },
+  {
+    "slug": "simvastatin",
+    "drugName": "Simvastatin",
+    "quickAnswer": "Avoid grapefruit with simvastatin unless your prescriber specifically says it is okay.",
+    "foodSafetyBadge": "Avoid/Separate",
+    "searchedCount": 1,
+    "lastSearchedAt": "2026-06-17T12:00:00.000Z"
+  },
+  {
+    "slug": "ciprofloxacin",
+    "drugName": "Ciprofloxacin",
+    "quickAnswer": "Ciprofloxacin can be taken with or without food, but separate it from dairy, calcium, iron, magnesium, zinc, and antacids.",
+    "foodSafetyBadge": "Avoid/Separate",
+    "searchedCount": 1,
+    "lastSearchedAt": "2026-06-17T12:00:00.000Z"
+  },
+  {
+    "slug": "doxycycline",
+    "drugName": "Doxycycline",
+    "quickAnswer": "Doxycycline can often be taken with food if it upsets your stomach, but follow your product’s dairy and mineral spacing directions.",
+    "foodSafetyBadge": "Use caution",
+    "searchedCount": 1,
+    "lastSearchedAt": "2026-06-17T12:00:00.000Z"
+  }
+]
