@@ -191,16 +191,20 @@
 
     recentChecksGrid.innerHTML = usableCards.map(function (card) {
       const checkedText = `Checked ${card.searchedCount} ${card.searchedCount === 1 ? 'time' : 'times'}`;
+      const savedResultUrl = `/drugs/${encodeURIComponent(card.slug)}/`;
       return `
         <article class="recent-check-card">
           <div class="recent-check-card-header">
-            <h3>${escapeHtml(card.drugName)}</h3>
+            <h3><a href="${escapeHtml(savedResultUrl)}">${escapeHtml(card.drugName)}</a></h3>
             <span class="${escapeHtml(getBadgeClassName(card.foodSafetyBadge))}">${escapeHtml(normalizeRecentSearchBadge(card.foodSafetyBadge))}</span>
           </div>
           <p class="recent-check-answer">${escapeHtml(card.quickAnswer)}</p>
           <div class="recent-check-card-footer">
             <span>${escapeHtml(checkedText)}</span>
-            <button class="recent-check-action" type="button" data-drug-name="${escapeHtml(card.drugName)}">Check this drug</button>
+            <div class="recent-check-actions">
+              <a class="recent-check-action" href="${escapeHtml(savedResultUrl)}">View saved result</a>
+              <button class="recent-check-action" type="button" data-drug-name="${escapeHtml(card.drugName)}">Check this drug</button>
+            </div>
           </div>
         </article>
       `;
@@ -1064,7 +1068,7 @@
 
   if (recentChecksGrid) {
     recentChecksGrid.addEventListener('click', function (event) {
-      const action = event.target.closest('.recent-check-action');
+      const action = event.target.closest('button.recent-check-action');
       if (!action || !input) {
         return;
       }
@@ -1082,8 +1086,30 @@
     renderRecentMedicationChecks(recentMedicationChecks);
   });
 
+  function applyHomepageQueryParameters() {
+    if (!input) {
+      return;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const drugName = (params.get('drug') || '').trim();
+
+    if (!drugName) {
+      return;
+    }
+
+    input.value = drugName;
+
+    if (params.get('run') === '1' && form && resultCard) {
+      window.setTimeout(function () {
+        runSearch(drugName);
+      }, 150);
+    }
+  }
+
   loadRecentMedicationChecks();
   startRecentMedicationChecksRefresh();
+  applyHomepageQueryParameters();
 
   chips.forEach(function (chip) {
     chip.addEventListener('click', function () {
