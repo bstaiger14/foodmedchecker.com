@@ -837,7 +837,7 @@
       const setIdValue = excerpt.setId || (matchingSource ? matchingSource.setId : '');
       const sourceDetails = [brandName, genericName, manufacturer, effectiveTime ? `Effective: ${effectiveTime}` : ''].filter(Boolean);
       const setId = setIdValue ? `<p class="source-id">Set ID: ${escapeHtml(setIdValue)}</p>` : '';
-      const href = excerpt.dailyMedUrl || excerpt.sourceUrl || excerpt.url || excerpt.labelUrl || excerpt.link || (matchingSource ? matchingSource.dailyMedUrl : '');
+      const href = excerpt.dailyMedUrl || excerpt.sourceUrl || excerpt.url || excerpt.labelUrl || excerpt.link || (matchingSource ? (matchingSource.dailyMedUrl || matchingSource.sourceUrl || matchingSource.url || matchingSource.labelUrl || matchingSource.link) : '') || (setIdValue ? `https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=${encodeURIComponent(setIdValue)}` : '');
       const link = href ? `<a class="excerpt-link" href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">View label on DailyMed</a>` : '';
 
       return `

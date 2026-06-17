@@ -112,6 +112,44 @@ function normalizeDate(value) {
   return Number.isFinite(time) ? new Date(time).toISOString() : new Date().toISOString();
 }
 
+function compactSourceExcerpts(excerpts) {
+  if (!Array.isArray(excerpts)) return [];
+  return excerpts.slice(0, 8).map((excerpt) => ({
+    sourceTitle: truncateText(excerpt && excerpt.sourceTitle, 180),
+    section: truncateText(excerpt && excerpt.section, 120),
+    text: truncateText((excerpt && (excerpt.text || excerpt.excerpt || excerpt.sourceText || excerpt.content)) || '', 1200),
+    matchedTerms: Array.isArray(excerpt && excerpt.matchedTerms) ? excerpt.matchedTerms.slice(0, 12).map((term) => truncateText(term, 60)).filter(Boolean) : [],
+    setId: truncateText(excerpt && excerpt.setId, 120),
+    dailyMedUrl: truncateText(excerpt && (excerpt.dailyMedUrl || excerpt.sourceUrl || excerpt.url || excerpt.labelUrl || excerpt.link), 500)
+  })).filter((excerpt) => excerpt.text || excerpt.sourceTitle || excerpt.setId || excerpt.dailyMedUrl);
+}
+
+function compactSources(sources) {
+  if (!Array.isArray(sources)) return [];
+  return sources.slice(0, 12).map((source) => ({
+    title: truncateText(source && source.title, 180),
+    setId: truncateText(source && source.setId, 120),
+    dailyMedUrl: truncateText(source && (source.dailyMedUrl || source.sourceUrl || source.url || source.labelUrl || source.link), 500),
+    brandName: truncateText(source && source.brandName, 120),
+    genericName: truncateText(source && source.genericName, 160),
+    manufacturer: truncateText(source && source.manufacturer, 160),
+    effectiveTime: truncateText(source && source.effectiveTime, 40)
+  })).filter((source) => source.title || source.setId || source.dailyMedUrl);
+}
+
+function compactDrugSummary(drugSummary) {
+  const medlinePlus = drugSummary && drugSummary.medlinePlus;
+  if (!medlinePlus) return null;
+  return {
+    medlinePlus: {
+      title: truncateText(medlinePlus.title || medlinePlus.name, 180),
+      source: truncateText(medlinePlus.source || medlinePlus.attribution, 180),
+      summary: truncateText(medlinePlus.summary || medlinePlus.description || medlinePlus.snippet, 1200),
+      url: truncateText(medlinePlus.url || medlinePlus.link || medlinePlus.href, 500)
+    }
+  };
+}
+
 function normalizeRecentSearchCard(card) {
   const drugName = truncateText(card && card.drugName, 120);
   const quickAnswer = truncateText(card && card.quickAnswer, 500);
@@ -123,6 +161,9 @@ function normalizeRecentSearchCard(card) {
     quickAnswer,
     practicalTakeaway: truncateText(card && card.practicalTakeaway, 700),
     foodSafetyBadge: normalizeBadge(card && card.foodSafetyBadge),
+    drugSummary: compactDrugSummary(card && card.drugSummary),
+    sourceExcerpts: compactSourceExcerpts(card && card.sourceExcerpts),
+    sources: compactSources(card && card.sources),
     searchedCount: Math.max(1, Number.parseInt(card && card.searchedCount, 10) || 1),
     firstSearchedAt: normalizeDate((card && card.firstSearchedAt) || lastSearchedAt),
     lastSearchedAt
@@ -198,6 +239,9 @@ function normalizeDrugCardFromPayload(payload, searchedDrug) {
     quickAnswer: payload.quickAnswer,
     practicalTakeaway: payload.practicalTakeaway,
     foodSafetyBadge: payload.foodSafetyBadge || (payload.aiSummary && payload.aiSummary.foodSafetyBadge),
+    drugSummary: payload.drugSummary,
+    sourceExcerpts: payload.sourceExcerpts,
+    sources: payload.sources,
     searchedCount: 1,
     firstSearchedAt: new Date().toISOString(),
     lastSearchedAt: new Date().toISOString()
