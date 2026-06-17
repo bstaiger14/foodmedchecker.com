@@ -5,6 +5,7 @@
   const RECENT_SEARCHES_MAX_CARDS = 25;
   const RECENT_SEARCHES_DESKTOP_VISIBLE = 8;
   const RECENT_SEARCHES_MOBILE_VISIBLE = 6;
+  const RECENT_SEARCHES_REFRESH_INTERVAL_MS = 45000;
 
   const DEFAULT_DISCLAIMER = 'Food Med Checker summarizes FDA labeling for educational purposes only. It is not medical advice and does not replace guidance from a pharmacist, physician, or other qualified healthcare professional.';
 
@@ -53,6 +54,9 @@
   let suggestionDebounceTimer = null;
   let suggestionAbortController = null;
   let recentMedicationChecks = [];
+  let recentMedicationRefreshTimer = null;
+  let recentMedicationRefreshInFlight = false;
+  let activeMedicationSearches = 0;
 
   if (year) {
     year.textContent = new Date().getFullYear();
@@ -269,13 +273,20 @@
     }
 
     try {
-      let cards;
+      let cards = [];
 
       try {
         cards = await fetchRecentMedicationChecksFromApi();
       } catch (apiError) {
         console.log('Food Med Checker recent checks API load skipped:', apiError.message);
-        cards = await fetchRecentMedicationChecksFromStaticFile();
+      }
+
+      if (!cards.length) {
+        try {
+          cards = await fetchRecentMedicationChecksFromStaticFile();
+        } catch (staticError) {
+          console.log('Food Med Checker static recent checks load skipped:', staticError.message);
+        }
       }
 
       recentMedicationChecks = mergeRecentSearchCards([], cards);
@@ -284,6 +295,38 @@
       recentChecksSection.classList.add('hidden');
       console.log('Food Med Checker recent checks load skipped:', error.message);
     }
+  }
+
+  async function refreshRecentMedicationChecksFromApi() {
+    if (!recentChecksSection || !recentChecksGrid || recentMedicationRefreshInFlight || activeMedicationSearches > 0 || document.hidden) {
+      return;
+    }
+
+    recentMedicationRefreshInFlight = true;
+    try {
+      const cards = await fetchRecentMedicationChecksFromApi();
+      if (cards.length) {
+        recentMedicationChecks = mergeRecentSearchCards([], cards);
+        renderRecentMedicationChecks(recentMedicationChecks);
+      }
+    } catch (error) {
+      console.log('Food Med Checker recent checks refresh skipped:', error.message);
+    } finally {
+      recentMedicationRefreshInFlight = false;
+    }
+  }
+
+  function startRecentMedicationChecksRefresh() {
+    if (!recentChecksSection || !recentChecksGrid || recentMedicationRefreshTimer) {
+      return;
+    }
+
+    recentMedicationRefreshTimer = window.setInterval(refreshRecentMedicationChecksFromApi, RECENT_SEARCHES_REFRESH_INTERVAL_MS);
+    document.addEventListener('visibilitychange', function () {
+      if (!document.hidden) {
+        refreshRecentMedicationChecksFromApi();
+      }
+    });
   }
 
   function looksLikeFailedQuickAnswer(quickAnswer) {
@@ -941,6 +984,7 @@
     }
 
     hideSuggestions();
+    activeMedicationSearches += 1;
     setLoadingState(true);
     renderLoading(drugName);
 
@@ -964,6 +1008,7 @@
     } catch (error) {
       renderError(error.message);
     } finally {
+      activeMedicationSearches = Math.max(0, activeMedicationSearches - 1);
       stopLoadingFacts();
       setLoadingState(false);
     }
@@ -1038,6 +1083,7 @@
   });
 
   loadRecentMedicationChecks();
+  startRecentMedicationChecksRefresh();
 
   chips.forEach(function (chip) {
     chip.addEventListener('click', function () {

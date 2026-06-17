@@ -1,3 +1,8 @@
 name = "foodmedchecker-api"
 main = "worker.js"
 compatibility_date = "2026-06-15"
+
+[[kv_namespaces]]
+binding = "RECENT_SEARCHES_KV"
+id = "REPLACE_WITH_RECENT_SEARCHES_KV_NAMESPACE_ID"
+preview_id = "REPLACE_WITH_RECENT_SEARCHES_KV_PREVIEW_NAMESPACE_ID"
