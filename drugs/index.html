@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Medication Food Check Directory | Food Med Checker</title>
+  <meta name="description" content="Browse saved Food Med Checker medication food, meal timing, grapefruit, dairy, mineral, and administration checks.">
+  <link rel="stylesheet" href="/assets/css/styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="/" aria-label="Food Med Checker home">
+        <img class="brand-logo" src="/assets/New Header Logo.png" alt="" aria-hidden="true">
+        <span class="brand-text-wrap"><span class="brand-title">Food Med Checker</span><span class="brand-powered">Powered by HelloPharmacist</span></span>
+      </a>
+      <nav class="site-nav" aria-label="Primary navigation">
+        <a href="/drugs/" aria-current="page">Drugs</a>
+        <a href="/#how-it-works">How It Works</a>
+        <a href="/#faq">FAQ</a>
+      </nav>
+    </div>
+  </header>
+  <main>
+    <section class="section directory-hero">
+      <div class="container">
+        <p class="eyebrow">Drug Directory</p>
+        <h1>Medication Food Check Directory</h1>
+        <p class="hero-subtitle">Browse saved FoodMedChecker medication food and meal-timing checks.</p>
+        <p class="directory-trust-note">These saved summaries come from completed FoodMedChecker label checks and can be refreshed with a live scan.</p>
+        <div class="directory-toolbar" aria-label="Directory filters">
+          <label class="directory-search" for="directory-search-input">
+            <span>Search saved medications</span>
+            <input id="directory-search-input" type="search" placeholder="Search saved medications…" autocomplete="off">
+          </label>
+          <div class="az-filter" id="az-filter" aria-label="Filter by first letter"></div>
+          <p class="directory-count" id="directory-count" aria-live="polite">Loading saved medication checks…</p>
+        </div>
+      </div>
+    </section>
+    <section class="section directory-results-section" aria-live="polite">
+      <div class="container" id="drug-directory-root"></div>
+    </section>
+  </main>
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p>&copy; <span id="year"></span> Food Med Checker.</p>
+      <p>Educational FDA labeling summaries for food and medication instructions.</p>
+      <nav class="footer-links" aria-label="Footer navigation">
+        <a href="/drugs/">Drugs</a><a href="/privacy-policy">Privacy Policy</a><a href="/about">About</a><a href="/contact-us">Contact Us</a>
+      </nav>
+    </div>
+  </footer>
+  <a class="sticky-pharmacist-cta" href="/contact-us" aria-label="Ask a pharmacist"><span class="cta-icon" aria-hidden="true">✉</span><span>Ask a Pharmacist</span></a>
+  <script src="/assets/js/drug-directory.js" defer></script>
+</body>
+</html>
