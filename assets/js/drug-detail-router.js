@@ -1,6 +1,6 @@
 (function () {
   const API_BASE_URL = 'https://foodmedchecker-api.curly-lake-5061.workers.dev';
-  const PHARMACIST_URL = 'https://hellopharmacist.com/ask-a-pharmacist';
+  const PHARMACIST_URL = 'https://hellopharmacist.com/contact-us';
   const root = document.querySelector('#drug-detail-router-root');
   const year = document.querySelector('#year');
   if (year) year.textContent = new Date().getFullYear();
@@ -36,7 +36,7 @@
   function renderNotFound(slug) { document.title = 'Saved drug check not found yet | Food Med Checker'; renderShell(`<p class="eyebrow">Medication food instructions</p><h1>Saved drug check not found yet</h1><p class="hero-subtitle">This medication may not have a saved public check yet. Run a fresh search to create one.</p><div class="drug-detail-actions"><a class="directory-button-primary" href="/?drug=${encodeURIComponent(slug)}&run=1">Search this medication</a><a class="directory-button-secondary" href="/drugs/">Back to Drug Directory</a></div>`); }
 
   function findMatchingSource(excerpt, sources) {
-    return normalizeArray(sources).find(source => (excerpt && source) && ((excerpt.setId && source.setId === excerpt.setId) || (excerpt.sourceTitle && source.title === excerpt.sourceTitle))) || null;
+    return normalizeArray(sources).find(source => (excerpt && source) && ((excerpt.setId && source.setId === excerpt.setId) || (excerpt.sourceTitle && source.title === excerpt.sourceTitle))) || normalizeArray(sources)[0] || null;
   }
 
   function getDailyMedHref(excerpt, sources) {
@@ -47,18 +47,17 @@
   }
 
   function renderDrugSummary(drugSummary) {
-    const medlinePlus = drugSummary && drugSummary.medlinePlus;
+    const medlinePlus = drugSummary && (drugSummary.medlinePlus || drugSummary.medlineplus || drugSummary.medline);
     if (!medlinePlus) return '';
     const title = medlinePlus.title || medlinePlus.name || 'MedlinePlus drug information';
-    const source = medlinePlus.source || medlinePlus.attribution || 'MedlinePlus, National Library of Medicine';
     const summary = medlinePlus.summary || medlinePlus.description || medlinePlus.snippet || '';
     const url = medlinePlus.url || medlinePlus.link || medlinePlus.href;
-    return `<article class="drug-detail-card drug-detail-medline"><h2>MedlinePlus Drug Description</h2><h3>${escapeHtml(title)}</h3><p class="medline-source">${escapeHtml(source)}</p>${summary ? `<p>${escapeHtml(summary)}</p>` : ''}${url ? `<a class="source-link" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">Read more on MedlinePlus</a>` : ''}</article>`;
+    return `<article class="drug-detail-card drug-detail-medline"><h2>Drug Description</h2><p class="medline-source">Provided by MedlinePlus</p><h3>${escapeHtml(title)}</h3>${summary ? `<p>${escapeHtml(summary)}</p>` : ''}${url ? `<a class="source-link" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">Read more on MedlinePlus</a>` : ''}</article>`;
   }
 
   function renderSourceExcerpts(card) {
     if (!card.sourceExcerpts.length) return `<article class="drug-detail-card"><h2>Need the source excerpts?</h2><p>Run a fresh check to review the live FDA label excerpts used by FoodMedChecker.</p></article>`;
-    return `<article class="drug-detail-card drug-detail-excerpts"><h2>Source excerpts</h2><p>These FDA label excerpts supported the saved food-instruction summary for this medication.</p>${card.sourceExcerpts.slice(0, 6).map((excerpt, index) => { const href = getDailyMedHref(excerpt, card.sources); const title = excerpt.sourceTitle || 'FDA label excerpt'; const text = excerpt.text || excerpt.excerpt || excerpt.sourceText || excerpt.content || ''; return `<div class="drug-detail-excerpt"><div class="excerpt-card-heading"><h3>${escapeHtml(title)}</h3>${href ? `<a class="excerpt-link" href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">View DailyMed label</a>` : ''}</div>${excerpt.section ? `<p class="excerpt-meta"><span>${escapeHtml(excerpt.section)}</span></p>` : ''}<p>${escapeHtml(text || `Excerpt ${index + 1} text was not available in this saved record.`)}</p></div>`; }).join('')}</article>`;
+    return `<article class="drug-detail-card drug-detail-excerpts"><h2>Source excerpts</h2><p>These FDA label excerpts supported the saved food-instruction summary for this medication.</p>${card.sourceExcerpts.slice(0, 6).map((excerpt, index) => { const href = getDailyMedHref(excerpt, card.sources); const title = excerpt.sourceTitle || 'FDA label excerpt'; const text = excerpt.text || excerpt.excerpt || excerpt.supportingExcerpt || excerpt.excerptText || excerpt.sourceText || excerpt.content || ''; return `<div class="drug-detail-excerpt"><div class="excerpt-card-heading"><h3>${escapeHtml(title)}</h3>${href ? `<a class="excerpt-link" href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">View DailyMed label</a>` : ''}</div>${excerpt.section ? `<p class="excerpt-meta"><span>${escapeHtml(excerpt.section)}</span></p>` : ''}<p>${escapeHtml(text || `Excerpt ${index + 1} text was not available in this saved record.`)}</p></div>`; }).join('')}</article>`;
   }
 
   function renderDetail(card) {
