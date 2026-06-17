@@ -1,13 +1,7 @@
 (function () {
   const API_BASE_URL = 'https://foodmedchecker-api.curly-lake-5061.workers.dev';
-  const RECENT_SEARCHES_GITHUB_CONFIG = {
-    enabled: true,
-    owner: 'bstaiger14',
-    repo: 'foodmedchecker',
-    branch: 'main',
-    path: 'data/recent-drug-searches.json',
-    token: ''
-  };
+  const RECENT_SEARCHES_API_PATH = '/recent-searches';
+  const RECENT_SEARCHES_STATIC_PATH = '/data/recent-drug-searches.json';
   const RECENT_SEARCHES_MAX_CARDS = 25;
   const RECENT_SEARCHES_DESKTOP_VISIBLE = 8;
   const RECENT_SEARCHES_MOBILE_VISIBLE = 6;
@@ -211,19 +205,79 @@
     recentChecksSection.classList.remove('hidden');
   }
 
+  async function fetchJsonWithTimeout(url, options, timeoutMs) {
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(function () { controller.abort(); }, timeoutMs || 8000);
+
+    try {
+      return await fetch(url, Object.assign({}, options || {}, { signal: controller.signal }));
+    } finally {
+      window.clearTimeout(timeoutId);
+    }
+  }
+
+  function normalizeRecentSearchPayload(payload) {
+    if (Array.isArray(payload)) {
+      return payload;
+    }
+
+    if (Array.isArray(payload && payload.cards)) {
+      return payload.cards;
+    }
+
+    if (Array.isArray(payload && payload.recentSearches)) {
+      return payload.recentSearches;
+    }
+
+    if (Array.isArray(payload && payload.results)) {
+      return payload.results;
+    }
+
+    return [];
+  }
+
+  async function fetchRecentMedicationChecksFromApi() {
+    const response = await fetchJsonWithTimeout(`${API_BASE_URL}${RECENT_SEARCHES_API_PATH}?limit=${RECENT_SEARCHES_MAX_CARDS}`, {
+      headers: { Accept: 'application/json' },
+      cache: 'no-store'
+    }, 8000);
+
+    if (!response.ok) {
+      throw new Error(`Recent checks API returned ${response.status}`);
+    }
+
+    return normalizeRecentSearchPayload(await response.json());
+  }
+
+  async function fetchRecentMedicationChecksFromStaticFile() {
+    const cacheBust = encodeURIComponent(new Date().toISOString().slice(0, 16));
+    const response = await fetch(`${RECENT_SEARCHES_STATIC_PATH}?v=${cacheBust}`, {
+      headers: { Accept: 'application/json' },
+      cache: 'no-store'
+    });
+
+    if (!response.ok) {
+      throw new Error(`Static recent checks returned ${response.status}`);
+    }
+
+    return normalizeRecentSearchPayload(await response.json());
+  }
+
   async function loadRecentMedicationChecks() {
     if (!recentChecksSection || !recentChecksGrid) {
       return;
     }
 
     try {
-      const response = await fetch('/data/recent-drug-searches.json', { headers: { Accept: 'application/json' } });
-      if (!response.ok) {
-        recentChecksSection.classList.add('hidden');
-        return;
+      let cards;
+
+      try {
+        cards = await fetchRecentMedicationChecksFromApi();
+      } catch (apiError) {
+        console.log('Food Med Checker recent checks API load skipped:', apiError.message);
+        cards = await fetchRecentMedicationChecksFromStaticFile();
       }
 
-      const cards = await response.json();
       recentMedicationChecks = mergeRecentSearchCards([], cards);
       renderRecentMedicationChecks(recentMedicationChecks);
     } catch (error) {
@@ -259,64 +313,34 @@
 
     recentMedicationChecks = mergeRecentSearchCards(recentMedicationChecks.filter(function (card) { return card.slug !== slug; }), [updatedCard]);
     renderRecentMedicationChecks(recentMedicationChecks);
-    persistRecentSearchesToGitHub(recentMedicationChecks);
+    persistRecentMedicationCheck(updatedCard);
   }
 
-  function encodeBase64Unicode(value) {
-    return btoa(unescape(encodeURIComponent(value)));
-  }
-
-  function decodeBase64Unicode(value) {
-    return decodeURIComponent(escape(atob(String(value || '').replace(/\n/g, ''))));
-  }
-
-  async function persistRecentSearchesToGitHub(cards) {
-    const config = RECENT_SEARCHES_GITHUB_CONFIG;
-    if (!config.enabled || !config.token) {
-      return;
-    }
-
-    const url = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${config.path}`;
-
+  async function persistRecentMedicationCheck(card) {
     try {
-      const getResponse = await fetch(`${url}?ref=${encodeURIComponent(config.branch)}`, {
+      const response = await fetchJsonWithTimeout(`${API_BASE_URL}${RECENT_SEARCHES_API_PATH}`, {
+        method: 'POST',
         headers: {
-          Accept: 'application/vnd.github+json',
-          Authorization: `Bearer ${config.token}`,
-          'X-GitHub-Api-Version': '2022-11-28'
-        }
-      });
-
-      if (!getResponse.ok) {
-        throw new Error(`GitHub content fetch failed with status ${getResponse.status}`);
-      }
-
-      const fileData = await getResponse.json();
-      const existingCards = JSON.parse(decodeBase64Unicode(fileData.content));
-      const mergedCards = mergeRecentSearchCards(existingCards, cards);
-      const content = `${JSON.stringify(mergedCards, null, 2)}\n`;
-
-      const putResponse = await fetch(url, {
-        method: 'PUT',
-        headers: {
-          Accept: 'application/vnd.github+json',
-          Authorization: `Bearer ${config.token}`,
-          'Content-Type': 'application/json',
-          'X-GitHub-Api-Version': '2022-11-28'
+          Accept: 'application/json',
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          message: 'Update recent medication food checks',
-          content: encodeBase64Unicode(content),
-          sha: fileData.sha,
-          branch: config.branch
+          card: card,
+          limit: RECENT_SEARCHES_MAX_CARDS
         })
-      });
+      }, 8000);
 
-      if (!putResponse.ok) {
-        throw new Error(`GitHub content update failed with status ${putResponse.status}`);
+      if (!response.ok) {
+        throw new Error(`Recent checks API update returned ${response.status}`);
+      }
+
+      const cards = normalizeRecentSearchPayload(await response.json());
+      if (cards.length) {
+        recentMedicationChecks = mergeRecentSearchCards([], cards);
+        renderRecentMedicationChecks(recentMedicationChecks);
       }
     } catch (error) {
-      console.log('Food Med Checker recent checks GitHub update failed:', error.message);
+      console.log('Food Med Checker recent checks API update skipped:', error.message);
     }
   }
 
