@@ -2266,8 +2266,16 @@ input {
   margin-top: 10px;
 }
 
+.drug-detail-pharmacist-cta {
+  padding-bottom: 34px;
+}
+
+.drug-detail-pharmacist-cta p {
+  margin-bottom: 24px;
+}
+
 .drug-detail-pharmacist-cta .directory-button-primary {
-  margin-top: 16px;
+  margin-top: 8px;
 }
 
 @media (max-width: 620px) {

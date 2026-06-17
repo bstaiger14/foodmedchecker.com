@@ -117,7 +117,7 @@ function compactSourceExcerpts(excerpts) {
   return excerpts.slice(0, 8).map((excerpt) => ({
     sourceTitle: truncateText(excerpt && excerpt.sourceTitle, 180),
     section: truncateText(excerpt && excerpt.section, 120),
-    text: truncateText((excerpt && (excerpt.text || excerpt.excerpt || excerpt.sourceText || excerpt.content)) || '', 1200),
+    text: truncateText((excerpt && (excerpt.text || excerpt.excerpt || excerpt.supportingExcerpt || excerpt.excerptText || excerpt.sourceText || excerpt.content)) || '', 1200),
     matchedTerms: Array.isArray(excerpt && excerpt.matchedTerms) ? excerpt.matchedTerms.slice(0, 12).map((term) => truncateText(term, 60)).filter(Boolean) : [],
     setId: truncateText(excerpt && excerpt.setId, 120),
     dailyMedUrl: truncateText(excerpt && (excerpt.dailyMedUrl || excerpt.sourceUrl || excerpt.url || excerpt.labelUrl || excerpt.link), 500)
@@ -272,6 +272,9 @@ export async function recordDrugSearch(env, payload, searchedDrug) {
     quickAnswer: card.quickAnswer,
     practicalTakeaway: card.practicalTakeaway,
     foodSafetyBadge: card.foodSafetyBadge,
+    drugSummary: card.drugSummary || existing.drugSummary,
+    sourceExcerpts: card.sourceExcerpts && card.sourceExcerpts.length ? card.sourceExcerpts : existing.sourceExcerpts,
+    sources: card.sources && card.sources.length ? card.sources : existing.sources,
     searchedCount: (Number.parseInt(existing.searchedCount, 10) || 1) + 1,
     firstSearchedAt: existing.firstSearchedAt || card.firstSearchedAt,
     lastSearchedAt: card.lastSearchedAt
